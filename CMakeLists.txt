@@ -42,6 +42,7 @@ add_library(app_lib STATIC
     src/NodeController/nodeEditor.cpp
     src/Nodes/factoryNode.cpp
     src/Nodes/simpleNode.cpp
+    src/Nodes/simpleMahcineNode.cpp
     src/Util/digraph.cpp
 )
 

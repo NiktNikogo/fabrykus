@@ -2,7 +2,8 @@
 
 #include <ImNodeFlow.h>
 #include "graphNode.hpp"
-
+#include <optional>
+#include <unordered_map>
 class DiGraph
 {
 private:
@@ -24,5 +25,10 @@ public:
     auto getNodes() const -> const std::vector<GraphNode>& ;
     auto getNodes() -> std::vector<GraphNode>&; 
     auto clearEdges() -> void;
-
+    auto topologicalSort() const -> std::optional<std::vector<Id>>;
+    auto printTopologicalSort() const -> void;
+    auto calcNodeDepths() const -> std::optional<std::unordered_map<Id, size_t>>;
+    auto getMaxDepth() const -> std::optional<size_t>;
+    auto getNodesAtDepth(size_t targetDepth) const -> std::vector<Id>;
+    auto printByDepth() const -> void;
 };
