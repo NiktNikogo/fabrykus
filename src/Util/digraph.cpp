@@ -72,7 +72,7 @@ auto DiGraph::printGraph() const -> void {
         } else {
             std::cout << std::format("  Node 0x{:X} -> ", node.data);
             for(size_t i = 0; i < node.edges.size(); ++i) {
-                std::cout << node.edges[i]->data;
+                std::cout << std::format("0x{:X}", node.edges[i]->data);
                 if(i < node.edges.size() - 1) {
                     std::cout << ", ";
                 }
