@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(MyApp VERSION 0.1.0 LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- 1. GLFW ---
@@ -38,9 +38,19 @@ target_link_libraries(imnodeflow PUBLIC imgui)
 # FIX FOR THE ERROR:
 target_compile_definitions(imnodeflow PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
 
+add_library(app_lib STATIC
+    src/NodeController/nodeEditor.cpp
+    src/Nodes/factoryNode.cpp
+    src/Nodes/simpleNode.cpp
+    src/Util/digraph.cpp
+)
+
+target_include_directories(app_lib PUBLIC src)
+target_link_libraries(app_lib PUBLIC imgui imnodeflow)
+
 # --- 4. Main Application ---
 add_executable(app src/main.cpp)
-target_link_libraries(app PRIVATE imgui imnodeflow glfw OpenGL::GL)
+target_link_libraries(app PRIVATE imgui imnodeflow glfw OpenGL::GL app_lib)
 
 if (WIN32)
     target_link_libraries(app PRIVATE gdi32 user32 shell32 imm32)

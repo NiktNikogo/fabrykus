@@ -8,7 +8,7 @@
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
 #endif
 
-#include "example.hpp"
+#include "NodeController/nodeEditor.hpp"
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -60,7 +60,8 @@ int main(int, char**)
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Create a node editor with width and height
-    NodeEditor* neditor = new(NodeEditor)(500, 500);
+    size_t size = 500;
+    auto editor = std::make_unique<NodeEditor>(size);
 
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr;
@@ -83,11 +84,18 @@ int main(int, char**)
         node_editor_size.x -= 16;
         node_editor_size.y -= 16;
 
+        if(ImGui::IsKeyPressed(ImGuiKey_Q)) {
+            editor->addNodeAtMouse();
+        }
+        if(ImGui::IsKeyPressed(ImGuiKey_P)) {
+            editor->printGraph();
+        }
+
         ImGui::SetNextWindowSize(window_size);
         ImGui::SetNextWindowPos(window_pos);
         ImGui::Begin("Node Editor", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-        neditor->set_size(node_editor_size);
-        neditor->draw();
+        editor->set_size(node_editor_size);
+        editor->draw();
         ImGui::End();
 
        
@@ -104,9 +112,6 @@ int main(int, char**)
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_END;
 #endif
-
-    delete neditor;
-    neditor = nullptr;
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
