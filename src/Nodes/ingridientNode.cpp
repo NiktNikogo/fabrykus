@@ -13,18 +13,13 @@ IngridientNode::IngridientNode() : SimpleMachineNode()
 auto IngridientNode::draw() -> void
 {
     ImGui::Text("UID: 0x%lX", this->getUID());
-    ImGui::Text("Internal Pin Count: %d", (int)this->getIns().size() + (int)this->getOuts().size());
+    
     ImGui::PushItemWidth(100.f);
 
     ImGui::Text("Time:");
     ImGui::SameLine();
-    auto tmp = static_cast<int>(time);
-    if (ImGui::InputInt("##Time", &tmp))
-    {
-        time = static_cast<size_t>(std::max(0, tmp));
-    }
-
-
+    ImGui::InputDouble("##Time", &time);
+   
     if (formatInputIngridients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
                                { this->dropOUT(uid); }))
     {

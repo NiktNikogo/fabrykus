@@ -7,8 +7,9 @@
 class SimpleMachineNode : public ImFlow::BaseNode
 {
 protected:
-    size_t time;
-    size_t fuel;
+    double time;
+    double fuel;
+    double machineSpeed;
     std::vector<Ingredient> ins;
     std::vector<Ingredient> outs;
     std::vector<ImFlow::Pin *> inPins;
@@ -20,7 +21,8 @@ public:
 protected:
     auto formatInputIngridients(const char *category, const char *prefix, std::vector<Ingredient> &list,
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool;
-    auto calcEfficiency() -> float;
+    auto calcEfficiency() -> double;
+    auto calcOptimalCount() -> double;
 public:
     SimpleMachineNode();
     SimpleMachineNode(size_t time, size_t fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs);

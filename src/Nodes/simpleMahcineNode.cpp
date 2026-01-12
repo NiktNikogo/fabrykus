@@ -5,7 +5,7 @@
 #include <format>
 #include <string>
 
-SimpleMachineNode::SimpleMachineNode() : fuel(1), time(1), inPins(), outPins{}
+SimpleMachineNode::SimpleMachineNode() : fuel(1.0), time(1.0), machineSpeed(1.0), inPins(), outPins{}
 {
 
     ins = {{1, "Iron ore"}};
@@ -22,45 +22,33 @@ auto SimpleMachineNode::draw() -> void
 {
 
     ImGui::Text("UID: 0x%lX", this->getUID());
-    ImGui::Text("Internal Pin Count: %d", (int)this->getIns().size() + (int)this->getOuts().size());
+    ImGui::Text("Optimal amount: %f", this->calcOptimalCount());
     ImGui::PushItemWidth(100.f);
 
     ImGui::Text("Time:");
-    ImGui::SameLine();
-    auto tmp = static_cast<int>(time);
-    if (ImGui::InputInt("##Time", &tmp))
-    {
-        time = static_cast<size_t>(std::max(0, tmp));
-    }
+    ImGui::InputDouble("##Time", &time);
 
     ImGui::Text("Fuel:");
-    ImGui::SameLine();
-    tmp = static_cast<int>(fuel);
-    if (ImGui::InputInt("##Fuel", &tmp))
-    {
-        fuel = static_cast<size_t>(std::max(0, tmp));
-    }
-
+    ImGui::InputDouble("##Fuel", &fuel);
+   
+    ImGui::Text("Machine Speed:");
+    ImGui::InputDouble("##Machine Speed", &machineSpeed);
+    
     float eff = this->calcEfficiency();
 
     ImVec4 color = eff < 1.0f ? ImVec4(1, 0.5f, 0, 1) : ImVec4(0, 1, 0, 1);
-    ImGui::Separator();
     ImGui::Text("Status");
-    ImGui::SameLine();
     ImGui::TextColored(color, "%.0f%% efficency", eff * 100.0f);
 
     if(eff < 1.0f) {
         ImGui::TextColored(ImVec4(1, 0.3f, 0.3f, 1), "Bottleneck");
     }
-    ImGui::Separator();
 
-    if (formatInputIngridients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid)
-                               { this->dropIN(uid); }))
+    if (formatInputIngridients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid) { this->dropIN(uid); }))
     {
         return;
     }
-    if (formatInputIngridients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
-                               { this->dropOUT(uid); }))
+    if (formatInputIngridients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid) { this->dropOUT(uid); }))
     {
         return;
     }
@@ -165,8 +153,7 @@ auto SimpleMachineNode::syncPins() -> void
 
     for (size_t i = 0; i < ins.size(); i++)
     {
-        auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
-                                                                                                    {
+        auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p){
             if (i < ins.size()) {
                 Ingredient recived = getInVal<Ingredient>(i);
                 double demand = this->ins[i].amount/this->time;
@@ -187,11 +174,11 @@ auto SimpleMachineNode::syncPins() -> void
         auto p = this->addOUT_uid<Ingredient>(i, " ")
             ->behaviour([this, i](){
                 float eff = this->calcEfficiency();
-                
+                float count = this->calcOptimalCount();
                 Ingredient result = this->outs[i];
                 
                 if(this->time > 0) {
-                    result.amount = (result.amount/this->time)*(double)eff;
+                    result.amount = (result.amount/this->time) * eff * count * machineSpeed;
                 } else {
                     result.amount = 0;
                 }
@@ -250,11 +237,8 @@ auto SimpleMachineNode::formatInputIngridients(const char *category, const char 
         ImGui::PushID(i);
         ImGui::Text("%d:", i);
         ImGui::SameLine();
-        auto tmp = static_cast<int>(list[i].amount);
-        if (ImGui::InputInt(std::format("##{}Amt{}", prefix, i).c_str(), &tmp))
-        {
-            list[i].amount = tmp >= 0 ? static_cast<size_t>(tmp) : list[i].amount;
-        }
+        ImGui::InputDouble(std::format("##{}Amt{}", prefix, i).c_str(), &list[i].amount);
+        
         ImGui::SameLine();
         char buffer[SimpleMachineNode::TEXT_INPUT_MAX_LENGTH]{};
         snprintf(buffer, sizeof(buffer), "%s", list[i].name.c_str());
@@ -279,7 +263,7 @@ auto SimpleMachineNode::formatInputIngridients(const char *category, const char 
     return false;
 }
 
-auto SimpleMachineNode::calcEfficiency() -> float
+auto SimpleMachineNode::calcEfficiency() -> double
 {
     float minSatisfaction = 1.0;
 
@@ -290,15 +274,39 @@ auto SimpleMachineNode::calcEfficiency() -> float
 
         if(recived.name == ins[i].name) {
 
-            double demand = ins[i].amount/this->time;
+            double demand = ins[i].amount/this->time * machineSpeed;
 
             if(demand <= 0 ) continue;;
 
             float satisfaction = recived.amount / demand;
             minSatisfaction = std::min(satisfaction, minSatisfaction);
         } else {
-            return 0.0f;
+            return 0.0;
         }
     }
     return minSatisfaction;
+}
+
+auto SimpleMachineNode::calcOptimalCount() -> double
+{
+    if(time <= 0 || ins.empty()) return 0.0;
+
+    double maxCount = 0.0;
+
+    for(size_t i =0; i < ins.size(); i++) {
+        Ingredient recived = getInVal<Ingredient>(i);
+
+        if(recived.name == ins[i].name) {
+
+            double consumptionPerNode = ins[i].amount/this->time;
+
+            if(consumptionPerNode > 0) {
+                double req = recived.amount / consumptionPerNode / machineSpeed;
+                maxCount = std::max(maxCount, req);
+            }
+        } else {
+            return 0.0;
+        }
+    }
+    return maxCount;
 }
