@@ -13,8 +13,6 @@ protected:
     std::vector<Ingredient> outs;
     std::vector<ImFlow::Pin *> inPins;
     std::vector<ImFlow::Pin *> outPins;
-    int timeInput = 0;
-    int fuelInput = 0;
 
 public:
     static const size_t TEXT_INPUT_MAX_LENGTH = 128;
@@ -22,7 +20,7 @@ public:
 protected:
     auto formatInputIngridients(const char *category, const char *prefix, std::vector<Ingredient> &list,
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool;
-
+    auto calcEfficiency() -> float;
 public:
     SimpleMachineNode();
     SimpleMachineNode(size_t time, size_t fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
@@ -30,4 +28,6 @@ public:
     auto draw() -> void override;
     virtual auto update() -> void;
     virtual auto syncPins() -> void;
+    inline const std::vector<Ingredient>& getInList() const { return ins; }
+    inline const std::vector<Ingredient>& getOutList() const { return outs; }
 };

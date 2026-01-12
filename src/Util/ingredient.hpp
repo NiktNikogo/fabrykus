@@ -2,6 +2,6 @@
 
 #include "string"
 struct Ingredient {
-    size_t amount;
+    double amount;
     std::string name;
 };

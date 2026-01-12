@@ -15,7 +15,6 @@ private:
 public:
     NodeEditor(size_t gridSize);
 
-    // auto addNode(const ImVec2& pos)-> void;
     template <typename T>
     auto addNodeAtMouse() -> void
     {

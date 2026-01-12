@@ -4,11 +4,9 @@ IngridientNode::IngridientNode() : SimpleMachineNode()
 {
     ins.clear();
     outs.clear();
-    outs.push_back({0, "Output 1"});
-
+    outs.push_back({1, "Iron ore"});
     setTitle("Source");
     setStyle(ImFlow::NodeStyle::green());
-
     syncPins();
 }
 
@@ -20,10 +18,12 @@ auto IngridientNode::draw() -> void
 
     ImGui::Text("Time:");
     ImGui::SameLine();
-    if (ImGui::InputInt("##Time", &timeInput))
+    auto tmp = static_cast<int>(time);
+    if (ImGui::InputInt("##Time", &tmp))
     {
-        time = static_cast<size_t>(std::max(0, timeInput));
+        time = static_cast<size_t>(std::max(0, tmp));
     }
+
 
     if (formatInputIngridients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
                                { this->dropOUT(uid); }))
@@ -48,13 +48,17 @@ auto IngridientNode::syncPins() -> void
 
     for (size_t i = 0; i < outs.size(); i++)
     {
-        auto p = this->addOUT_uid<Ingredient>(i, " ")->renderer([this, i](ImFlow::Pin *p)
-                                                                {
+        auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() {
+            return Ingredient{ this->outs[i].amount / time, this->outs[i].name };
+        });
+        
+        p->renderer([this, i](ImFlow::Pin *p) {
             if (i < outs.size()) {
                 ImGui::Text("%s", this->outs[i].name.c_str());
                 p->drawSocket();
                 p->drawDecoration();
-            } });
+            } 
+        });
         outPins.push_back(p);
     }
 }

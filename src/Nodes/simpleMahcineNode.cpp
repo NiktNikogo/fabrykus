@@ -5,12 +5,11 @@
 #include <format>
 #include <string>
 
-
-SimpleMachineNode::SimpleMachineNode() : fuel(0), time(0), inPins(), outPins{}
+SimpleMachineNode::SimpleMachineNode() : fuel(1), time(1), inPins(), outPins{}
 {
 
-    ins = {{0, "Input 1"}, {0, "Input 2"}};
-    outs = {{0, "Output 1"}, {0, "Output 2"}};
+    ins = {{1, "Iron ore"}};
+    outs = {{2, "Iron ingot"}};
     setTitle("Machine");
     setStyle(ImFlow::NodeStyle::cyan());
 
@@ -28,17 +27,32 @@ auto SimpleMachineNode::draw() -> void
 
     ImGui::Text("Time:");
     ImGui::SameLine();
-    if (ImGui::InputInt("##Time", &timeInput))
+    auto tmp = static_cast<int>(time);
+    if (ImGui::InputInt("##Time", &tmp))
     {
-        time = static_cast<size_t>(std::max(0, timeInput));
+        time = static_cast<size_t>(std::max(0, tmp));
     }
 
     ImGui::Text("Fuel:");
     ImGui::SameLine();
-    if (ImGui::InputInt("##Fuel", &fuelInput))
+    tmp = static_cast<int>(fuel);
+    if (ImGui::InputInt("##Fuel", &tmp))
     {
-        fuel = static_cast<size_t>(std::max(0, fuelInput));
+        fuel = static_cast<size_t>(std::max(0, tmp));
     }
+
+    float eff = this->calcEfficiency();
+
+    ImVec4 color = eff < 1.0f ? ImVec4(1, 0.5f, 0, 1) : ImVec4(0, 1, 0, 1);
+    ImGui::Separator();
+    ImGui::Text("Status");
+    ImGui::SameLine();
+    ImGui::TextColored(color, "%.0f%% efficency", eff * 100.0f);
+
+    if(eff < 1.0f) {
+        ImGui::TextColored(ImVec4(1, 0.3f, 0.3f, 1), "Bottleneck");
+    }
+    ImGui::Separator();
 
     if (formatInputIngridients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid)
                                { this->dropIN(uid); }))
@@ -56,7 +70,7 @@ auto SimpleMachineNode::draw() -> void
 
 auto SimpleMachineNode::update() -> void
 {
-    
+
     for (size_t i = 0; i < ins.size(); i++)
     {
         auto p = inPin(i);
@@ -89,38 +103,50 @@ auto SimpleMachineNode::update() -> void
 
 auto SimpleMachineNode::syncPins() -> void
 {
- 
-    using Connection = std::pair<std::string, ImFlow::Pin*>;
+
+    using Connection = std::pair<std::string, ImFlow::Pin *>;
 
     std::vector<Connection> savedInLinks;
     std::vector<Connection> savedOutLinks;
-    for (auto &pin : this->getIns()) {
-        if(pin->isConnected()) {
-            if(auto link = pin->getLink().lock()) {
+    for (auto &pin : this->getIns())
+    {
+        if (pin->isConnected())
+        {
+            if (auto link = pin->getLink().lock())
+            {
                 auto uid = pin->getUid();
-                if(uid < ins.size()) {
+                if (uid < ins.size())
+                {
                     savedInLinks.push_back({ins[uid].name, link->left()});
                 }
             }
         }
     }
 
-    for(auto &pin : getOuts()) {
-        if(pin->isConnected()) {
-            if(auto link = pin->getLink().lock()) {
+    for (auto &pin : getOuts())
+    {
+        if (pin->isConnected())
+        {
+            if (auto link = pin->getLink().lock())
+            {
                 auto uid = pin->getUid();
-                if(uid < outs.size()) {
-                    ImFlow::Pin* otherSide = link->right(); 
+                if (uid < outs.size())
+                {
+                    ImFlow::Pin *otherSide = link->right();
                     savedOutLinks.push_back({outs[uid].name, otherSide});
                 }
             }
         }
     }
     std::vector<uintptr_t> inUids, outUids;
-    for(auto& p: this->getIns()) inUids.push_back(p->getUid());
-    for(auto& p: this->getOuts()) outUids.push_back(p->getUid());
-    for(auto id : inUids) this->dropIN(id);
-    for(auto id : outUids) this->dropOUT(id);
+    for (auto &p : this->getIns())
+        inUids.push_back(p->getUid());
+    for (auto &p : this->getOuts())
+        outUids.push_back(p->getUid());
+    for (auto id : inUids)
+        this->dropIN(id);
+    for (auto id : outUids)
+        this->dropOUT(id);
     inPins.clear();
     outPins.clear();
 
@@ -142,7 +168,13 @@ auto SimpleMachineNode::syncPins() -> void
         auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
                                                                                                     {
             if (i < ins.size()) {
+                Ingredient recived = getInVal<Ingredient>(i);
+                double demand = this->ins[i].amount/this->time;
+
                 ImGui::Text("%s", this->ins[i].name.c_str());
+                ImGui::TextDisabled("%.2f / %.2f units/s ", recived.amount, demand);
+                
+
                 ImGui::SameLine();
                 p->drawSocket();
                 p->drawDecoration();
@@ -152,38 +184,57 @@ auto SimpleMachineNode::syncPins() -> void
 
     for (size_t i = 0; i < outs.size(); i++)
     {
-        auto p = this->addOUT_uid<Ingredient>(i, " ")->renderer([this, i](ImFlow::Pin *p)
-                                                                {
+        auto p = this->addOUT_uid<Ingredient>(i, " ")
+            ->behaviour([this, i](){
+                float eff = this->calcEfficiency();
+                
+                Ingredient result = this->outs[i];
+                
+                if(this->time > 0) {
+                    result.amount = (result.amount/this->time)*(double)eff;
+                } else {
+                    result.amount = 0;
+                }
+            
+                return result;
+            });
+        p->renderer([this, i](ImFlow::Pin *p) {
             if (i < outs.size()) {
                 ImGui::Text("%s", this->outs[i].name.c_str());
                 p->drawSocket();
                 p->drawDecoration();
-            } });
+            } 
+        });
+
         outPins.push_back(p);
     }
 
-    
-    for(size_t i = 0; i < ins.size(); i++) {
-        for(auto& conn : savedInLinks) {
-            if(conn.first == ins[i].name && conn.second) {
+    for (size_t i = 0; i < ins.size(); i++)
+    {
+        for (auto &conn : savedInLinks)
+        {
+            if (conn.first == ins[i].name && conn.second)
+            {
                 inPins[i]->createLink(conn.second);
             }
         }
     }
 
-    for(size_t i=0; i < outs.size(); i++) {
-        for(auto& conn : savedOutLinks) {
-            if(conn.first == outs[i].name && conn.second) {
+    for (size_t i = 0; i < outs.size(); i++)
+    {
+        for (auto &conn : savedOutLinks)
+        {
+            if (conn.first == outs[i].name && conn.second)
+            {
                 outPins[i]->createLink(conn.second);
             }
         }
     }
-    
 }
 
 auto SimpleMachineNode::formatInputIngridients(const char *category, const char *prefix,
-                                               std::vector<Ingredient> &list, 
-                                               const std::vector<std::shared_ptr<ImFlow::Pin>>&pins, std::function<void(uintptr_t)> dropFunc) -> bool
+                                               std::vector<Ingredient> &list,
+                                               const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool
 {
     ImGui::Text("%s", category);
     ImGui::SameLine();
@@ -226,4 +277,28 @@ auto SimpleMachineNode::formatInputIngridients(const char *category, const char 
         ImGui::PopID();
     }
     return false;
+}
+
+auto SimpleMachineNode::calcEfficiency() -> float
+{
+    float minSatisfaction = 1.0;
+
+    if(this->time <= 0) return 0.0f;
+
+    for(size_t i =0; i < ins.size(); i++) {
+        Ingredient recived = getInVal<Ingredient>(i);
+
+        if(recived.name == ins[i].name) {
+
+            double demand = ins[i].amount/this->time;
+
+            if(demand <= 0 ) continue;;
+
+            float satisfaction = recived.amount / demand;
+            minSatisfaction = std::min(satisfaction, minSatisfaction);
+        } else {
+            return 0.0f;
+        }
+    }
+    return minSatisfaction;
 }
