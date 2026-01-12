@@ -6,7 +6,7 @@
 
 class SimpleMachineNode : public ImFlow::BaseNode
 {
-private:
+protected:
     size_t time;
     size_t fuel;
     std::vector<Ingredient> ins;
@@ -19,14 +19,15 @@ private:
 public:
     static const size_t TEXT_INPUT_MAX_LENGTH = 128;
 
-private:
+protected:
     auto formatInputIngridients(const char *category, const char *prefix, std::vector<Ingredient> &list,
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool;
 
 public:
     SimpleMachineNode();
     SimpleMachineNode(size_t time, size_t fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
+    virtual ~SimpleMachineNode() = default;
     auto draw() -> void override;
-    auto update() -> void;
-    auto syncPins() -> void;
+    virtual auto update() -> void;
+    virtual auto syncPins() -> void;
 };

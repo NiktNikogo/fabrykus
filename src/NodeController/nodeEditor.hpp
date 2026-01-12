@@ -3,25 +3,29 @@
 #include <imgui.h>
 #include <iostream>
 
-#include "Nodes/simpleNode.hpp"
 #include "Util/digraph.hpp"
 
-class NodeEditor : public ImFlow::BaseNode {
+class NodeEditor : public ImFlow::BaseNode
+{
 private:
     ImFlow::ImNodeFlow grid;
     ImVec2 size;
     DiGraph digraph;
-public:
 
+public:
     NodeEditor(size_t gridSize);
 
-    
-    //auto addNode(const ImVec2& pos)-> void;
-    auto addNodeAtMouse() -> void;
-    auto addEdge(const ImVec2& pos) -> void;
+    // auto addNode(const ImVec2& pos)-> void;
+    template <typename T>
+    auto addNodeAtMouse() -> void
+    {
+        auto node = grid.placeNode<T>();
+        digraph.addNode(node->getUID());
+    }
 
+    auto addEdge(const ImVec2 &pos) -> void;
 
-    inline auto set_size(ImVec2 d) -> void {grid.setSize(d);}
+    inline auto set_size(ImVec2 d) -> void { grid.setSize(d); }
     auto draw() -> void override;
-    inline auto printGraph() const -> void {digraph.printGraph();}; 
+    inline auto printGraph() const -> void { digraph.printGraph(); };
 };

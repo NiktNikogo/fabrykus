@@ -9,6 +9,8 @@
 #endif
 
 #include "NodeController/nodeEditor.hpp"
+#include "Nodes/simpleMahcineNode.hpp"
+#include "Nodes/ingridientNode.hpp"
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -85,8 +87,12 @@ int main(int, char**)
         node_editor_size.y -= 16;
 
         if(ImGui::IsKeyPressed(ImGuiKey_Q)) {
-            editor->addNodeAtMouse();
+            editor->addNodeAtMouse<SimpleMachineNode>();
         }
+        if(ImGui::IsKeyPressed(ImGuiKey_W)) {
+            editor->addNodeAtMouse<IngridientNode>();
+        }
+
         if(ImGui::IsKeyPressed(ImGuiKey_P)) {
             editor->printGraph();
         }
