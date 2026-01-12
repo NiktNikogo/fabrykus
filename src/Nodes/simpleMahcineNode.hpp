@@ -10,10 +10,10 @@ private:
     std::vector<Ingredient> ins;
     std::vector<Ingredient> outs;
 
-    char inName1[64] = "";
-    char inName2[64] = "";
-    char outName1[64] = "";
-    char outName2[64] = "";
+    char inName1[64] = "Input 1";
+    char inName2[64] = "Input 2";
+    char outName1[64] = "Output 1";
+    char outName2[64] = "Output 2";
     int inAmount1 = 0;
     int inAmount2 = 0;
     int outAmount1 = 0;

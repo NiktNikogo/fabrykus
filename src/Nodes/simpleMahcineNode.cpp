@@ -4,15 +4,39 @@
 #include <format>
 SimpleMachineNode::SimpleMachineNode() : fuel(0), time(0)
 {
-
+    
     setTitle("Machine");
     setStyle(ImFlow::NodeStyle::cyan());
+    ImFlow::BaseNode::addIN<Ingredient>("Input 1", Ingredient{0, ""}, ImFlow::ConnectionFilter::SameType())->renderer([this](ImFlow::Pin* p) {
+        auto pp = dynamic_cast<ImFlow::InPin<float>*>(p);
+        ImGui::Text(this->inName1);
+        p->drawSocket();
+        p->drawDecoration();
+    });
 
-    ImFlow::BaseNode::addIN<Ingredient>("Input 1", Ingredient{0, ""}, ImFlow::ConnectionFilter::SameType());
-    ImFlow::BaseNode::addIN<Ingredient>("Input 2", Ingredient{0, ""}, ImFlow::ConnectionFilter::SameType());
-    ImFlow::BaseNode::addOUT<Ingredient>("Output 1", nullptr);
-    ImFlow::BaseNode::addOUT<Ingredient>("Output 2", nullptr);
+    ImFlow::BaseNode::addIN<Ingredient>("Input 1", Ingredient{0, ""}, ImFlow::ConnectionFilter::SameType())->renderer([this](ImFlow::Pin* p) {
+        auto pp = dynamic_cast<ImFlow::InPin<float>*>(p);
+        ImGui::Text(this->inName2);
+        p->drawSocket();
+        p->drawDecoration();
+    });
 
+    ImFlow::BaseNode::addOUT<Ingredient>("Output 1", nullptr)->renderer([this](ImFlow::Pin* p) {
+        auto pp = dynamic_cast<ImFlow::InPin<float>*>(p);
+        ImGui::Text(this->outName1);
+        p->drawSocket();
+        p->drawDecoration();
+    });
+
+    ImFlow::BaseNode::addOUT<Ingredient>("Output 1", nullptr)->renderer([this](ImFlow::Pin* p) {
+        auto pp = dynamic_cast<ImFlow::InPin<float>*>(p);
+        ImGui::Text(this->outName2);
+        p->drawSocket();
+        p->drawDecoration();
+    });
+
+
+    
     ins.resize(2);
     outs.resize(2);
 }
@@ -21,7 +45,9 @@ SimpleMachineNode::SimpleMachineNode(size_t time, size_t fuel, std::vector<Ingre
 }
 auto SimpleMachineNode::draw() -> void
 {
+
     ImGui::Text(std::format("UID: 0x{:X}", this->getUID()).c_str());
+    ImGui::Text("Internal Pin Count: %d", (int)this->getIns().size() + (int)this->getOuts().size());
     ImGui::PushItemWidth(100.f);
 
     ImGui::Text("Time:");
@@ -89,8 +115,6 @@ auto SimpleMachineNode::draw() -> void
     ImGui::SameLine();
     if (ImGui::InputText("##OutName2", outName2, sizeof(outName2)))
     {
-        outs[0].name = outName2;
+        outs[1].name = outName2;
     }
-
-    ImGui::PopItemWidth();
 }

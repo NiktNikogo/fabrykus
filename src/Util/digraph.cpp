@@ -1,4 +1,4 @@
-#include "DiGraph.hpp"
+#include "digraph.hpp"
 #include <format>
 #include <unordered_map>
 #include <queue>
