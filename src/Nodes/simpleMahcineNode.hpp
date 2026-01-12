@@ -22,6 +22,9 @@ private:
     int fuelInput = 0;
 
 public:
+    static const size_t TEXT_INPUT_MAX_LENGTH = 128;
+
+public:
     SimpleMachineNode();
     SimpleMachineNode(size_t time, size_t fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
     auto draw() -> void override;
