@@ -24,5 +24,6 @@ private:
 public:
     SimpleMachineNode();
     SimpleMachineNode(size_t time, size_t fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
-    auto draw() -> void override ;
+    auto draw() -> void override;
+    auto update() -> void;
 };  
