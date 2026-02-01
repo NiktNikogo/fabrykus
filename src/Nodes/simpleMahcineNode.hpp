@@ -9,7 +9,6 @@ class SimpleMachineNode : public ImFlow::BaseNode
 protected:
     double time;
     double fuel;
-    double machineSpeed;
     std::vector<Ingredient> ins;
     std::vector<Ingredient> outs;
     std::vector<ImFlow::Pin *> inPins;

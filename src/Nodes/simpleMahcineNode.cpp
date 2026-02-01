@@ -5,7 +5,7 @@
 #include <format>
 #include <string>
 
-SimpleMachineNode::SimpleMachineNode() : fuel(1.0), time(1.0), machineSpeed(1.0), inPins(), outPins{}
+SimpleMachineNode::SimpleMachineNode() : fuel(1.0), time(1.0), inPins(), outPins{}
 {
 
     ins = {{1, "Iron ore"}};
@@ -30,9 +30,6 @@ auto SimpleMachineNode::draw() -> void
 
     ImGui::Text("Fuel:");
     ImGui::InputDouble("##Fuel", &fuel);
-   
-    ImGui::Text("Machine Speed:");
-    ImGui::InputDouble("##Machine Speed", &machineSpeed);
     
     float eff = this->calcEfficiency();
 
@@ -110,7 +107,7 @@ auto SimpleMachineNode::syncPins() -> void
             }
         }
     }
-
+    
     for (auto &pin : getOuts())
     {
         if (pin->isConnected())
@@ -156,8 +153,7 @@ auto SimpleMachineNode::syncPins() -> void
         auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p){
             if (i < ins.size()) {
                 Ingredient recived = getInVal<Ingredient>(i);
-                double demand = this->ins[i].amount/this->time;
-
+                double demand = this->ins[i].amount/this->time * this->calcOptimalCount();
                 ImGui::Text("%s", this->ins[i].name.c_str());
                 ImGui::TextDisabled("%.2f / %.2f units/s ", recived.amount, demand);
                 
@@ -178,7 +174,7 @@ auto SimpleMachineNode::syncPins() -> void
                 Ingredient result = this->outs[i];
                 
                 if(this->time > 0) {
-                    result.amount = (result.amount/this->time) * eff * count * machineSpeed;
+                    result.amount = (result.amount/this->time) * eff * count;
                 } else {
                     result.amount = 0;
                 }
@@ -187,7 +183,9 @@ auto SimpleMachineNode::syncPins() -> void
             });
         p->renderer([this, i](ImFlow::Pin *p) {
             if (i < outs.size()) {
+                Ingredient result = this->outs[i];
                 ImGui::Text("%s", this->outs[i].name.c_str());
+                ImGui::TextDisabled("%.2f units/s ", result.amount/this->time);
                 p->drawSocket();
                 p->drawDecoration();
             } 
@@ -274,9 +272,9 @@ auto SimpleMachineNode::calcEfficiency() -> double
 
         if(recived.name == ins[i].name) {
 
-            double demand = ins[i].amount/this->time * machineSpeed;
+            double demand = ins[i].amount/this->time;
 
-            if(demand <= 0 ) continue;;
+            if(demand <= 0 ) continue;
 
             float satisfaction = recived.amount / demand;
             minSatisfaction = std::min(satisfaction, minSatisfaction);
@@ -298,12 +296,13 @@ auto SimpleMachineNode::calcOptimalCount() -> double
 
         if(recived.name == ins[i].name) {
 
-            double consumptionPerNode = ins[i].amount/this->time;
+            double demand = ins[i].amount/this->time;
+            
+            if(demand <= 0) continue;
 
-            if(consumptionPerNode > 0) {
-                double req = recived.amount / consumptionPerNode / machineSpeed;
-                maxCount = std::max(maxCount, req);
-            }
+            double req = recived.amount / demand;
+            maxCount = std::max(maxCount, req);
+        
         } else {
             return 0.0;
         }

@@ -17,8 +17,7 @@ auto ProductNode::draw() -> void
     ImGui::Text("UID: 0x%lX", this->getUID());
     ImGui::PushItemWidth(100.f);
 
-    if (formatInputIngridients("Input:", "in", ins, this->getIns(), [this](uintptr_t uid)
-                               { this->dropIN(uid); }))
+    if (formatInputIngridients("Input:", "in", ins, this->getIns(), [this](uintptr_t uid){ this->dropIN(uid); }))
     {
         return;
     }
@@ -27,7 +26,6 @@ auto ProductNode::draw() -> void
     {
         if (inPins[i])
         {
-            // FIX: Use the UID directly as the key
             Ingredient curr = getInVal<Ingredient>(inPins[i]->getUid());
             ImGui::Text("%s: %.2f units/sec", curr.name.c_str(), (float)curr.amount);
         }
