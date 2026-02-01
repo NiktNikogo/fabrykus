@@ -10,6 +10,7 @@
 
 #include "Ui/nodeEditor.hpp"
 #include "Ui/nodeInspector.hpp"
+#include "Ui/menuBuilder.hpp"
 #include "Nodes/simpleMahcineNode.hpp"
 #include "Nodes/ingridientNode.hpp"
 #include "Nodes/productNode.hpp"
@@ -106,41 +107,21 @@ int main(int, char **)
             editor->printGraph();
         }
 
-        float menu_bar_height = 0.0f;
-        if (ImGui::BeginMainMenuBar())
-        {
-            ImGui::SetWindowFontScale(1.5f);
-            if (ImGui::BeginMenu("File"))
-            {
-
-                ImGui::SetWindowFontScale(1.5f);
-                if (ImGui::MenuItem("Save", "Ctrl+S"))
-                {
-                }
-                if (ImGui::MenuItem("Exit"))
-                {
-                }
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Windows"))
-            {
-
-                ImGui::SetWindowFontScale(1.5f);
-                if (ImGui::MenuItem("Node Inspector", "Ctrl + I"))
-                {
-                    inspector->setHiddenByKeys(!inspector->getHiddenByKeys());
-                }
-                ImGui::EndMenu();
-            }
-
-            menu_bar_height = ImGui::GetWindowSize().y;
-            ImGui::EndMainMenuBar();
-        }
-
+        MenuBuilder(1.5f)
+            .beginMenu("File")
+                .addItem("Save", "Ctrl+S", {})
+                .addItem("Open", "Ctrl+O", {})
+                .addItem("Exit", "", {})
+            .endMenu()
+            .beginMenu("Windows")
+                .addItem("Node Insepctor", "Ctrl+I", [&inspector](){
+                     inspector->setHiddenByKeys(!inspector->getHiddenByKeys());
+                })
+            .endMenu();
+    
         ImVec2 screenSize = ImGui::GetIO().DisplaySize;
-        ImVec2 editorPos = ImVec2(0, menu_bar_height);
-        ImVec2 editorSize = ImVec2(screenSize.x, screenSize.y - menu_bar_height);
+        ImVec2 editorPos = ImVec2(0, 0);
+        ImVec2 editorSize = ImVec2(screenSize.x, screenSize.y);
 
         ImGui::SetNextWindowPos(editorPos);
         ImGui::SetNextWindowSize(editorSize);
