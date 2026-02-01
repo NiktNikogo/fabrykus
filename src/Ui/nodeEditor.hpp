@@ -3,8 +3,6 @@
 #include <imgui.h>
 #include <iostream>
 
-
-
 #include "Util/digraph.hpp"
 #include "Nodes/simpleMahcineNode.hpp"
 
@@ -14,6 +12,13 @@ private:
     ImFlow::ImNodeFlow grid;
     ImVec2 size;
     DiGraph digraph;
+
+    const ImGuiWindowFlags editorFlags = ImGuiWindowFlags_NoTitleBar |
+                             ImGuiWindowFlags_NoResize |
+                             ImGuiWindowFlags_NoMove |
+                             ImGuiWindowFlags_NoScrollbar |
+                             ImGuiWindowFlags_NoCollapse |
+                             ImGuiWindowFlags_NoBringToFrontOnFocus;
 
 public:
     NodeEditor(size_t gridSize);
@@ -31,4 +36,5 @@ public:
     auto draw() -> void override;
     inline auto printGraph() const -> void { digraph.printGraph(); };
     auto getSelectedNode() -> std::shared_ptr<SimpleMachineNode>;
+    auto update(ImVec2 size) -> void;
 };

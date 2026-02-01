@@ -82,14 +82,6 @@ int main(int, char **)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        auto window_size = io.DisplaySize;
-        window_size.x -= 1;
-        window_size.y -= 1;
-        const auto window_pos = ImVec2(1, 1);
-        auto node_editor_size = window_size;
-        node_editor_size.x -= 16;
-        node_editor_size.y -= 16;
-
         if (ImGui::IsKeyPressed(ImGuiKey_Q))
         {
             editor->addNodeAtMouse<IngridientNode>();
@@ -119,27 +111,12 @@ int main(int, char **)
                 })
             .endMenu();
     
-        ImVec2 screenSize = ImGui::GetIO().DisplaySize;
-        ImVec2 editorPos = ImVec2(0, 0);
-        ImVec2 editorSize = ImVec2(screenSize.x, screenSize.y);
+       
+                                 
+        editor->update(ImGui::GetIO().DisplaySize);
+        editor->draw();
 
-        ImGui::SetNextWindowPos(editorPos);
-        ImGui::SetNextWindowSize(editorSize);
-
-        const auto editorFlags = ImGuiWindowFlags_NoTitleBar |
-                                 ImGuiWindowFlags_NoResize |
-                                 ImGuiWindowFlags_NoMove |
-                                 ImGuiWindowFlags_NoScrollbar |
-                                 ImGuiWindowFlags_NoCollapse |
-                                 ImGuiWindowFlags_NoBringToFrontOnFocus;
-        if (ImGui::Begin("Node Editor", nullptr, editorFlags))
-        {
-            editor->setSize(editorSize);
-            editor->draw();
-            ImGui::End();
-        }
         auto currentNode = editor->getSelectedNode();
-
         if (currentNode != nullptr)
         {
             inspector->setNode(editor->getSelectedNode());
