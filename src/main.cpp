@@ -8,8 +8,8 @@
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
 #endif
 
-#include "NodeController/nodeEditor.hpp"
-#include "NodeController/nodeInspector.hpp"
+#include "Ui/nodeEditor.hpp"
+#include "Ui/nodeInspector.hpp"
 #include "Nodes/simpleMahcineNode.hpp"
 #include "Nodes/ingridientNode.hpp"
 #include "Nodes/productNode.hpp"
@@ -161,7 +161,6 @@ int main(int, char **)
 
         if (currentNode != nullptr)
         {
-
             inspector->setNode(editor->getSelectedNode());
         }
 

@@ -47,8 +47,8 @@ target_link_libraries(imnodeflow PUBLIC imgui)
 target_compile_definitions(imnodeflow PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
 
 add_library(app_lib STATIC
-    src/NodeController/nodeEditor.cpp
-    src/NodeController/nodeInspector.cpp
+    src/Ui/nodeEditor.cpp
+    src/Ui/nodeInspector.cpp
     src/Nodes/simpleMahcineNode.cpp
     src/Nodes/productNode.cpp
     src/Nodes/ingridientNode.cpp
