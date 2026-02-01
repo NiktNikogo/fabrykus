@@ -1,6 +1,9 @@
+#include <format>
+
 #include "nodeEditor.hpp"
 #include "Nodes/simpleMahcineNode.hpp"
-#include <format>
+#include "Nodes/productNode.hpp"
+#include "Nodes/ingridientNode.hpp"
 NodeEditor::NodeEditor(size_t gridSize)
     : size({(float)gridSize, (float)gridSize}), grid("Editor"), digraph()
 {
@@ -30,7 +33,6 @@ auto NodeEditor::draw() -> void
         {
             digraph.printTopologicalSort();
         }
-
         if (ImGui::IsKeyPressed(ImGuiKey_3))
         {
             auto depths = digraph.calcNodeDepths();
@@ -44,6 +46,33 @@ auto NodeEditor::draw() -> void
 
             digraph.printByDepth();
         }
+
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+        {
+            ImGui::OpenPopup("NodeEditorContext");
+        }
+
+        if (ImGui::BeginPopup("NodeEditorContext"))
+        {
+            if (ImGui::BeginMenu("Machines"))
+            {
+                if (ImGui::MenuItem("Machine"))
+                {
+                    this->addNodeAtMouse<SimpleMachineNode>();
+                }
+                if (ImGui::MenuItem("Storage"))
+                {
+                    this->addNodeAtMouse<ProductNode>();
+                }
+                if (ImGui::MenuItem("Source"))
+                {
+                    this->addNodeAtMouse<IngridientNode>();
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndPopup();
+        }
+
         ImGui::End();
     }
 }

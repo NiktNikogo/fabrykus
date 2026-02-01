@@ -82,18 +82,6 @@ int main(int, char **)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        if (ImGui::IsKeyPressed(ImGuiKey_Q))
-        {
-            editor->addNodeAtMouse<IngridientNode>();
-        }
-        if (ImGui::IsKeyPressed(ImGuiKey_W))
-        {
-            editor->addNodeAtMouse<SimpleMachineNode>();
-        }
-        if (ImGui::IsKeyPressed(ImGuiKey_E))
-        {
-            editor->addNodeAtMouse<ProductNode>();
-        }
         if (ImGui::IsKeyPressed(ImGuiKey_P))
         {
             editor->printGraph();
