@@ -13,12 +13,12 @@
 #include "Nodes/ingridientNode.hpp"
 #include "Nodes/productNode.hpp"
 
-static void glfw_error_callback(int error, const char* description)
+static void glfw_error_callback(int error, const char *description)
 {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
-int main(int, char**)
+int main(int, char **)
 {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -26,38 +26,38 @@ int main(int, char**)
 
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     // GL ES 2.0 + GLSL 100
-    const char* glsl_version = "#version 100";
+    const char *glsl_version = "#version 100";
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #elif defined(__APPLE__)
     // GL 3.2 Core + GLSL 150
-    const char* glsl_version = "#version 150";
+    const char *glsl_version = "#version 150";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 #else
     // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
+    const char *glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "ImNodeFlow example", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(1280, 720, "ImNodeFlow example", nullptr, nullptr);
     if (window == nullptr)
         return -1;
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // 
+    glfwSwapInterval(1); //
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 
     ImGui::StyleColorsDark();
-
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -87,27 +87,60 @@ int main(int, char**)
         node_editor_size.x -= 16;
         node_editor_size.y -= 16;
 
-        if(ImGui::IsKeyPressed(ImGuiKey_Q)) {
+        if (ImGui::IsKeyPressed(ImGuiKey_Q))
+        {
             editor->addNodeAtMouse<IngridientNode>();
         }
-        if(ImGui::IsKeyPressed(ImGuiKey_W)) {
+        if (ImGui::IsKeyPressed(ImGuiKey_W))
+        {
             editor->addNodeAtMouse<SimpleMachineNode>();
         }
-        if(ImGui::IsKeyPressed(ImGuiKey_E)) {
+        if (ImGui::IsKeyPressed(ImGuiKey_E))
+        {
             editor->addNodeAtMouse<ProductNode>();
         }
-        if(ImGui::IsKeyPressed(ImGuiKey_P)) {
+        if (ImGui::IsKeyPressed(ImGuiKey_P))
+        {
             editor->printGraph();
         }
 
-        ImGui::SetNextWindowSize(window_size);
-        ImGui::SetNextWindowPos(window_pos);
-        ImGui::Begin("Node Editor", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-        editor->set_size(node_editor_size);
-        editor->draw();
+        float menu_bar_height = 0.0f;
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("Save", "Ctrl+S"))
+                {
+                }
+                if (ImGui::MenuItem("Exit"))
+                {
+                }
+                ImGui::EndMenu();
+            }
+            menu_bar_height = ImGui::GetWindowSize().y;
+            ImGui::EndMainMenuBar();
+        }
+
+        ImVec2 screenSize = ImGui::GetIO().DisplaySize;
+        ImVec2 editorPos = ImVec2(0, menu_bar_height);
+        ImVec2 editorSize = ImVec2(screenSize.x, screenSize.y - menu_bar_height);
+
+        ImGui::SetNextWindowPos(editorPos);
+        ImGui::SetNextWindowSize(editorSize);
+
+        const auto editorFlags = ImGuiWindowFlags_NoTitleBar |
+                                  ImGuiWindowFlags_NoResize |
+                                  ImGuiWindowFlags_NoMove |
+                                  ImGuiWindowFlags_NoScrollbar |
+                                  ImGuiWindowFlags_NoCollapse |
+                                  ImGuiWindowFlags_NoBringToFrontOnFocus; 
+        if (ImGui::Begin("Node Editor", nullptr, editorFlags))
+        {
+            editor->set_size(editorSize);
+            editor->draw();
+        }
         ImGui::End();
 
-       
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -122,7 +155,6 @@ int main(int, char**)
     EMSCRIPTEN_MAINLOOP_END;
 #endif
 
-    // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
