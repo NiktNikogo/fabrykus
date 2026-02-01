@@ -9,6 +9,7 @@
 #endif
 
 #include "NodeController/nodeEditor.hpp"
+#include "NodeController/nodeInspector.hpp"
 #include "Nodes/simpleMahcineNode.hpp"
 #include "Nodes/ingridientNode.hpp"
 #include "Nodes/productNode.hpp"
@@ -44,7 +45,7 @@ int main(int, char **)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #endif
 
-    GLFWwindow *window = glfwCreateWindow(1280, 720, "ImNodeFlow example", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(1280, 720, "NodeTech", nullptr, nullptr);
     if (window == nullptr)
         return -1;
     glfwMakeContextCurrent(window);
@@ -65,6 +66,7 @@ int main(int, char **)
     // Create a node editor with width and height
     size_t size = 500;
     auto editor = std::make_unique<NodeEditor>(size);
+    auto inspector = std::make_unique<NodeInspector>();
 
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr;
@@ -107,8 +109,11 @@ int main(int, char **)
         float menu_bar_height = 0.0f;
         if (ImGui::BeginMainMenuBar())
         {
+            ImGui::SetWindowFontScale(1.5f);
             if (ImGui::BeginMenu("File"))
             {
+
+                ImGui::SetWindowFontScale(1.5f);
                 if (ImGui::MenuItem("Save", "Ctrl+S"))
                 {
                 }
@@ -117,6 +122,18 @@ int main(int, char **)
                 }
                 ImGui::EndMenu();
             }
+
+            if (ImGui::BeginMenu("Windows"))
+            {
+
+                ImGui::SetWindowFontScale(1.5f);
+                if (ImGui::MenuItem("Node Inspector", "Ctrl + I"))
+                {
+                    inspector->setHiddenByKeys(!inspector->getHiddenByKeys());
+                }
+                ImGui::EndMenu();
+            }
+
             menu_bar_height = ImGui::GetWindowSize().y;
             ImGui::EndMainMenuBar();
         }
@@ -129,19 +146,29 @@ int main(int, char **)
         ImGui::SetNextWindowSize(editorSize);
 
         const auto editorFlags = ImGuiWindowFlags_NoTitleBar |
-                                  ImGuiWindowFlags_NoResize |
-                                  ImGuiWindowFlags_NoMove |
-                                  ImGuiWindowFlags_NoScrollbar |
-                                  ImGuiWindowFlags_NoCollapse |
-                                  ImGuiWindowFlags_NoBringToFrontOnFocus; 
+                                 ImGuiWindowFlags_NoResize |
+                                 ImGuiWindowFlags_NoMove |
+                                 ImGuiWindowFlags_NoScrollbar |
+                                 ImGuiWindowFlags_NoCollapse |
+                                 ImGuiWindowFlags_NoBringToFrontOnFocus;
         if (ImGui::Begin("Node Editor", nullptr, editorFlags))
         {
-            editor->set_size(editorSize);
+            editor->setSize(editorSize);
             editor->draw();
+            ImGui::End();
         }
-        ImGui::End();
+        auto currentNode = editor->getSelectedNode();
 
+        if (currentNode != nullptr)
+        {
+
+            inspector->setNode(editor->getSelectedNode());
+        }
+
+        inspector->update();
+        inspector->draw();
         ImGui::Render();
+
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);

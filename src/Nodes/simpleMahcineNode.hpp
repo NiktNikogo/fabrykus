@@ -27,8 +27,10 @@ public:
     SimpleMachineNode(size_t time, size_t fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
     virtual ~SimpleMachineNode() = default;
     auto draw() -> void override;
+    virtual auto drawInspector() -> void;
     virtual auto update() -> void;
     virtual auto syncPins() -> void;
     inline const std::vector<Ingredient>& getInList() const { return ins; }
     inline const std::vector<Ingredient>& getOutList() const { return outs; }
+    const auto print() -> void const;
 };

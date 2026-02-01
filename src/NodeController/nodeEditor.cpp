@@ -38,3 +38,15 @@ auto NodeEditor::draw() -> void
         digraph.printByDepth();
     }
 }
+
+auto NodeEditor::getSelectedNode() -> std::shared_ptr<SimpleMachineNode>
+{
+    for(auto& pair : grid.getNodes()) {
+        auto node = pair.second;
+
+        if(node->isSelected()) {
+            return std::dynamic_pointer_cast<SimpleMachineNode>(node);
+        }
+    }
+    return nullptr;
+}

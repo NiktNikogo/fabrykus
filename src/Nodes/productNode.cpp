@@ -17,11 +17,6 @@ auto ProductNode::draw() -> void
     ImGui::Text("UID: 0x%lX", this->getUID());
     ImGui::PushItemWidth(100.f);
 
-    if (formatInputIngridients("Input:", "in", ins, this->getIns(), [this](uintptr_t uid){ this->dropIN(uid); }))
-    {
-        return;
-    }
-
     for (size_t i = 0; i < inPins.size(); i++)
     {
         if (inPins[i])
@@ -74,5 +69,14 @@ auto ProductNode::syncPins() -> void
                 p->drawDecoration();
             } });
         inPins.push_back(p);
+    }
+}
+
+auto ProductNode::drawInspector() -> void
+{
+    if (formatInputIngridients("Input:", "in", ins, this->getIns(), [this](uintptr_t uid)
+                               { this->dropIN(uid); }))
+    {
+        return;
     }
 }

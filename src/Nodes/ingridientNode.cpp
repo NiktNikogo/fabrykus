@@ -19,12 +19,6 @@ auto IngridientNode::draw() -> void
     ImGui::Text("Time:");
     ImGui::SameLine();
     ImGui::InputDouble("##Time", &time);
-   
-    if (formatInputIngridients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
-                               { this->dropOUT(uid); }))
-    {
-        return;
-    }
 }
 
 auto IngridientNode::update() -> void
@@ -55,5 +49,14 @@ auto IngridientNode::syncPins() -> void
             } 
         });
         outPins.push_back(p);
+    }
+}
+
+auto IngridientNode::drawInspector() -> void 
+{   
+    if (formatInputIngridients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
+                               { this->dropOUT(uid); }))
+    {
+        return;
     }
 }

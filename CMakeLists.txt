@@ -48,10 +48,12 @@ target_compile_definitions(imnodeflow PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
 
 add_library(app_lib STATIC
     src/NodeController/nodeEditor.cpp
+    src/NodeController/nodeInspector.cpp
     src/Nodes/simpleMahcineNode.cpp
     src/Nodes/productNode.cpp
     src/Nodes/ingridientNode.cpp
     src/Util/digraph.cpp
+
 )
 
 target_include_directories(app_lib PUBLIC src)

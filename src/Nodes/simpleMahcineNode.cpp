@@ -41,6 +41,11 @@ auto SimpleMachineNode::draw() -> void
         ImGui::TextColored(ImVec4(1, 0.3f, 0.3f, 1), "Bottleneck");
     }
 
+    update();
+}
+
+auto SimpleMachineNode::drawInspector() -> void
+{
     if (formatInputIngridients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid) { this->dropIN(uid); }))
     {
         return;
@@ -49,8 +54,6 @@ auto SimpleMachineNode::draw() -> void
     {
         return;
     }
-
-    update();
 }
 
 auto SimpleMachineNode::update() -> void
@@ -217,10 +220,32 @@ auto SimpleMachineNode::syncPins() -> void
     }
 }
 
+const auto SimpleMachineNode::print() -> void const
+{
+    std::cout << "-----------\n";
+    std::cout << std::format("UID: {}\n", this->getUID());
+    std::cout << std::format("Fuel: {}\n", this->fuel);
+    std::cout << std::format("Time: {}\n", this->time);
+    std::cout << "ins: \n";
+    for(const auto& in : ins) {
+        std::cout << std::format("Name: {}| Amount: {}\n", in.name, in.amount);
+    }
+    std::cout << "outs: \n";
+    for(const auto& out : outs) {
+        std::cout << std::format("Name: {}| Amount: {}\n", out.name, out.amount);
+    }
+    std::cout << "-----------\n";
+}
+
 auto SimpleMachineNode::formatInputIngridients(const char *category, const char *prefix,
                                                std::vector<Ingredient> &list,
                                                const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool
 {
+
+    auto totalWidth = ImGui::GetContentRegionAvail().x;
+    float amountWidth = totalWidth * 0.2f;
+    float nameWidth = totalWidth * 0.5f; 
+
     ImGui::Text("%s", category);
     ImGui::SameLine();
     if (ImGui::Button(std::format("+##Add{}", prefix).c_str()))
@@ -235,16 +260,23 @@ auto SimpleMachineNode::formatInputIngridients(const char *category, const char 
         ImGui::PushID(i);
         ImGui::Text("%d:", i);
         ImGui::SameLine();
+
+        ImGui::PushItemWidth(amountWidth);
         ImGui::InputDouble(std::format("##{}Amt{}", prefix, i).c_str(), &list[i].amount);
-        
+        ImGui::PopItemWidth();
         ImGui::SameLine();
+
+        ImGui::PushItemWidth(nameWidth);
         char buffer[SimpleMachineNode::TEXT_INPUT_MAX_LENGTH]{};
         snprintf(buffer, sizeof(buffer), "%s", list[i].name.c_str());
         if (ImGui::InputText(std::format("##{}Name{}", prefix, i).c_str(), buffer, sizeof(buffer)))
         {
             list[i].name = std::string(buffer);
         }
+        ImGui::PopItemWidth();
         ImGui::SameLine();
+        
+        
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
         if (ImGui::Button(std::format("X##{}_Del_{}", prefix, i).c_str()))
         {

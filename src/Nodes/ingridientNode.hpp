@@ -9,4 +9,5 @@ public:
     auto draw() -> void override;
     auto update() -> void;
     auto syncPins() -> void override;
+    auto drawInspector() -> void override;
 };
