@@ -10,6 +10,7 @@
 class SimpleMachineNode : public ImFlow::BaseNode
 {
 protected:
+    size_t id = -1;
     double time;
     double fuel;
     std::vector<Ingredient> ins;
@@ -25,17 +26,22 @@ protected:
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool;
     auto calcEfficiency() -> double;
     auto calcOptimalCount() -> double;
+
 public:
     SimpleMachineNode();
+    SimpleMachineNode(size_t id);
     SimpleMachineNode(size_t time, size_t fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
     virtual ~SimpleMachineNode() = default;
     auto draw() -> void override;
     virtual auto drawInspector() -> void;
     virtual auto update() -> void;
     virtual auto syncPins() -> void;
-    inline const std::vector<Ingredient>& getInList() const { return ins; }
-    inline const std::vector<Ingredient>& getOutList() const { return outs; }
-    const auto print() -> void const;
-    virtual const auto getNodeType() -> NodeType const;
-    virtual auto serialize() -> nlohmann::json const;
+    inline const std::vector<Ingredient> &getInList() const { return ins; }
+    inline const std::vector<Ingredient> &getOutList() const { return outs; }
+    inline const size_t getId() const { return id; }
+    const auto print() const -> void;
+    virtual const auto getNodeType() const -> NodeType;
+    virtual auto serialize() -> nlohmann::json;
+    const auto getInPinIndex(ImFlow::Pin *pin) const -> size_t;
+    const auto getOutPinIndex(ImFlow::Pin *pin) const -> size_t;
 };

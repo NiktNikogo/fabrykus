@@ -46,6 +46,14 @@ target_link_libraries(imnodeflow PUBLIC imgui)
 # FIX FOR THE ERROR:
 target_compile_definitions(imnodeflow PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
 
+# dialog
+add_library(imguifiledialog STATIC 
+    third_party/ImGuiFileDialog/ImGuiFileDialog.cpp
+)
+target_compile_definitions(imguifiledialog PRIVATE USE_STD_FILESYSTEM)
+target_include_directories(imguifiledialog PUBLIC third_party/ImGuiFileDialog)
+target_link_libraries(imguifiledialog PUBLIC imgui)
+
 # --- 4. nlohmann ---
 add_library(json_lib INTERFACE)
 
@@ -64,7 +72,7 @@ add_library(app_lib STATIC
 )
 
 target_include_directories(app_lib PUBLIC src)
-target_link_libraries(app_lib PUBLIC imgui imnodeflow json_lib)
+target_link_libraries(app_lib PUBLIC imgui imnodeflow imguifiledialog json_lib)
 
 # --- 6. Main Application ---
 add_executable(app src/main.cpp)

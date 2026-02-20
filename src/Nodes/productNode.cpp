@@ -1,6 +1,18 @@
 #include "productNode.hpp"
 
-ProductNode::ProductNode()
+ProductNode::ProductNode() : SimpleMachineNode()
+{
+    ins.clear();
+    outs.clear();
+    ins.push_back({2, "Iron ingot"});
+    time = 1;
+    setTitle("Storage");
+    setStyle(ImFlow::NodeStyle::red());
+
+    syncPins();
+}
+
+ProductNode::ProductNode(size_t id) : SimpleMachineNode(id)
 {
     ins.clear();
     outs.clear();
@@ -15,6 +27,7 @@ ProductNode::ProductNode()
 auto ProductNode::draw() -> void
 {
     ImGui::Text("UID: 0x%lX", this->getUID());
+    ImGui::Text("ID: %zd", this->getId());
     ImGui::PushItemWidth(100.f);
 
     for (size_t i = 0; i < inPins.size(); i++)
@@ -81,7 +94,7 @@ auto ProductNode::drawInspector() -> void
     }
 }
 
-const auto ProductNode::getNodeType() -> NodeType const 
+const auto ProductNode::getNodeType() const -> NodeType 
 {
     return NodeType::PRODUCT;
 }

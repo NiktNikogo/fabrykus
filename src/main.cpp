@@ -3,6 +3,8 @@
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>
 #include <GLFW/glfw3.h>
+#include <ImGuiFileDialog.h>
+
 
 #ifdef __EMSCRIPTEN__
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
@@ -90,9 +92,17 @@ int main(int, char **)
         MenuBuilder(1.5f)
             .beginMenu("File")
                 .addItem("Save", "Ctrl+S", [&editor]() {
-                    editor->save();
+                    IGFD::FileDialogConfig config;
+                    config.path = ".";
+                    ImGuiFileDialog::Instance()->OpenDialog("SaveProjectKey", 
+                        "Save project", ".json", config);
                 })
-                .addItem("Open", "Ctrl+O", {})
+                .addItem("Open", "Ctrl+O", [&editor]() {
+                    IGFD::FileDialogConfig config;
+                    config.path = ".";
+                    ImGuiFileDialog::Instance()->OpenDialog("OpenProjectKey", 
+                        "Open project", ".json", config);
+                })
                 .addItem("Exit", "", {})
             .endMenu()
             .beginMenu("Windows")

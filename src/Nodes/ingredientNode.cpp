@@ -10,9 +10,20 @@ IngredientNode::IngredientNode() : SimpleMachineNode()
     syncPins();
 }
 
+IngredientNode::IngredientNode(size_t id): SimpleMachineNode(id)
+{
+    ins.clear();
+    outs.clear();
+    outs.push_back({1, "Iron ore"});
+    setTitle("Source");
+    setStyle(ImFlow::NodeStyle::green());
+    syncPins();
+}
+
 auto IngredientNode::draw() -> void
 {
     ImGui::Text("UID: 0x%lX", this->getUID());
+    ImGui::Text("ID: %zd", this->getId());
     
     ImGui::PushItemWidth(100.f);
 
@@ -61,7 +72,7 @@ auto IngredientNode::drawInspector() -> void
     }
 }
 
-const auto IngredientNode::getNodeType() -> NodeType const 
+const auto IngredientNode::getNodeType() const -> NodeType  
 {
     return NodeType::INGREDIENT;
 }

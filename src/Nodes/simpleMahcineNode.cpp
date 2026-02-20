@@ -1,13 +1,23 @@
 #include "simpleMahcineNode.hpp"
 
 #include <ImNodeFlow.h>
-
 #include <format>
 #include <string>
+#include <algorithm>
+#include <memory>
 
 #include "Util/ingredient.hpp"
 
 SimpleMachineNode::SimpleMachineNode() : fuel(1.0), time(1.0), inPins(), outPins{}
+{
+    ins = {{1, "Iron ore"}};
+    outs = {{2, "Iron ingot"}};
+    setTitle("Machine");
+    setStyle(ImFlow::NodeStyle::cyan());
+
+    syncPins();
+}
+SimpleMachineNode::SimpleMachineNode(size_t id): id(id), fuel(1.0), time(1.0), inPins(), outPins{}
 {
     ins = {{1, "Iron ore"}};
     outs = {{2, "Iron ingot"}};
@@ -23,6 +33,7 @@ auto SimpleMachineNode::draw() -> void
 {
 
     ImGui::Text("UID: 0x%lX", this->getUID());
+    ImGui::Text("ID: %zd", this->getId());
     ImGui::Text("Optimal amount: %f", this->calcOptimalCount());
     ImGui::PushItemWidth(100.f);
 
@@ -93,40 +104,7 @@ auto SimpleMachineNode::update() -> void
 auto SimpleMachineNode::syncPins() -> void
 {
 
-    using Connection = std::pair<std::string, ImFlow::Pin *>;
 
-    std::vector<Connection> savedInLinks;
-    std::vector<Connection> savedOutLinks;
-    for (auto &pin : this->getIns())
-    {
-        if (pin->isConnected())
-        {
-            if (auto link = pin->getLink().lock())
-            {
-                auto uid = pin->getUid();
-                if (uid < ins.size())
-                {
-                    savedInLinks.push_back({ins[uid].name, link->left()});
-                }
-            }
-        }
-    }
-    
-    for (auto &pin : getOuts())
-    {
-        if (pin->isConnected())
-        {
-            if (auto link = pin->getLink().lock())
-            {
-                auto uid = pin->getUid();
-                if (uid < outs.size())
-                {
-                    ImFlow::Pin *otherSide = link->right();
-                    savedOutLinks.push_back({outs[uid].name, otherSide});
-                }
-            }
-        }
-    }
     std::vector<uintptr_t> inUids, outUids;
     for (auto &p : this->getIns())
         inUids.push_back(p->getUid());
@@ -197,31 +175,9 @@ auto SimpleMachineNode::syncPins() -> void
 
         outPins.push_back(p);
     }
-
-    for (size_t i = 0; i < ins.size(); i++)
-    {
-        for (auto &conn : savedInLinks)
-        {
-            if (conn.first == ins[i].name && conn.second)
-            {
-                inPins[i]->createLink(conn.second);
-            }
-        }
-    }
-
-    for (size_t i = 0; i < outs.size(); i++)
-    {
-        for (auto &conn : savedOutLinks)
-        {
-            if (conn.first == outs[i].name && conn.second)
-            {
-                outPins[i]->createLink(conn.second);
-            }
-        }
-    }
 }
 
-const auto SimpleMachineNode::print() -> void const
+const auto SimpleMachineNode::print() const -> void 
 {
     std::cout << "-----------\n";
     std::cout << std::format("UID: {}\n", this->getUID());
@@ -238,20 +194,39 @@ const auto SimpleMachineNode::print() -> void const
     std::cout << "-----------\n";
 }
 
-const auto SimpleMachineNode::getNodeType() -> NodeType const
+const auto SimpleMachineNode::getNodeType() const -> NodeType
 {
     return NodeType::MACHINE;
 }
 
-auto SimpleMachineNode::serialize() -> nlohmann::json const
+auto SimpleMachineNode::serialize() -> nlohmann::json
 {
     nlohmann::json node;
+    node["id"] = id;
     node["type"] = getNodeType();
     node["time"] = time;
     node["fuel"] = fuel;
     node["ins"] = ins;
     node["outs"] = outs;
+    node["pos"] = nlohmann::json({ 
+        {"x", getPos().x},
+        {"y", getPos().y}        
+    });
     return node;
+}
+
+const auto SimpleMachineNode::getInPinIndex(ImFlow::Pin* pin) const -> size_t 
+{
+    auto it = std::find(inPins.begin(), inPins.end(), pin);
+    if (it == inPins.end()) return 99999;
+    return std::distance(inPins.begin(), it);
+}
+
+const auto SimpleMachineNode::getOutPinIndex(ImFlow::Pin *pin) const -> size_t
+{
+    auto it = std::find(outPins.begin(), outPins.end(), pin);
+    if (it == outPins.end()) return 99999;
+    return std::distance(outPins.begin(), it);
 }
 
 auto SimpleMachineNode::formatInputIngredients(const char *category, const char *prefix,
