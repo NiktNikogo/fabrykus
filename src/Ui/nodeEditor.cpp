@@ -11,6 +11,7 @@ NodeEditor::NodeEditor(size_t gridSize)
 
 auto NodeEditor::draw() -> void
 {
+    ImGui::SetNextWindowSize(this->size);
     if (ImGui::Begin("Node Editor", nullptr, editorFlags))
     {
         grid.update();
@@ -70,6 +71,16 @@ auto NodeEditor::draw() -> void
                 }
                 ImGui::EndMenu();
             }
+
+            if(ImGui::BeginMenu("Utils")) {
+                
+                if(ImGui::MenuItem("Sort nodes", "Ctrl+D")) {
+                    std::cout << "sort pog?\n";
+                }
+                
+                ImGui::EndMenu();
+            }
+
             ImGui::EndPopup();
         }
 
@@ -94,4 +105,5 @@ auto NodeEditor::getSelectedNode() -> std::shared_ptr<SimpleMachineNode>
 auto NodeEditor::update(ImVec2 size) -> void
 {
     this->setSize(size);
+    this->size = size;
 }
