@@ -46,6 +46,12 @@ target_link_libraries(imnodeflow PUBLIC imgui)
 # FIX FOR THE ERROR:
 target_compile_definitions(imnodeflow PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
 
+# --- 4. nlohmann ---
+add_library(json_lib INTERFACE)
+
+target_include_directories(json_lib INTERFACE third_party)
+
+# --- 5. my staff ---
 add_library(app_lib STATIC
     src/Ui/nodeEditor.cpp
     src/Ui/nodeInspector.cpp
@@ -58,9 +64,9 @@ add_library(app_lib STATIC
 )
 
 target_include_directories(app_lib PUBLIC src)
-target_link_libraries(app_lib PUBLIC imgui imnodeflow)
+target_link_libraries(app_lib PUBLIC imgui imnodeflow json_lib)
 
-# --- 4. Main Application ---
+# --- 6. Main Application ---
 add_executable(app src/main.cpp)
 target_link_libraries(app PRIVATE imgui imnodeflow glfw OpenGL::GL app_lib)
 
