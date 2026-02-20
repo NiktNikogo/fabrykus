@@ -218,6 +218,30 @@ auto NodeEditor::parseNodes(nlohmann::json nodes) -> void
 
 auto NodeEditor::parseLinks(nlohmann::json links) -> void
 {
+    auto nodes = grid.getNodes();
+    std::unordered_map<int, std::shared_ptr<SimpleMachineNode>> nodeMap;
+    for(const auto [id, node] : nodes) {
+        auto casted = std::dynamic_pointer_cast<SimpleMachineNode>(node);
+        nodeMap[casted->getId()] =  casted;
+    }
+
+    for(auto data : links) {
+        size_t fromNodeId = data["from_node_id"];
+        size_t fromPinIdx = data["from_pin_idx"];
+        size_t toNodeId = data["to_node_id"];
+        size_t toPinIdx = data["to_pin_idx"];
+
+        auto fromNode = nodeMap[fromNodeId];
+        auto fromPin = fromNode->getOutListElement(fromPinIdx);
+        auto toNode = nodeMap[toNodeId];
+        auto toPin = toNode->getInListElement(toPinIdx);
+        
+
+        auto link = std::make_shared<ImFlow::Link>(fromPin, toPin, &grid);
+        
+        fromPin->createLink(toPin);
+    }
+  
 }
 
 auto NodeEditor::saveToFile(const std::string &path) -> void

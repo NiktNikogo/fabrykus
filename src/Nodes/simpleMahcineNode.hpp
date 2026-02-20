@@ -38,6 +38,8 @@ public:
     virtual auto syncPins() -> void;
     inline const std::vector<Ingredient> &getInList() const { return ins; }
     inline const std::vector<Ingredient> &getOutList() const { return outs; }
+    inline ImFlow::Pin* getInListElement(size_t idx) const {return inPins[idx];}
+    inline ImFlow::Pin* getOutListElement(size_t idx) const {return outPins[idx];}
     inline const size_t getId() const { return id; }
     const auto print() const -> void;
     virtual const auto getNodeType() const -> NodeType;
