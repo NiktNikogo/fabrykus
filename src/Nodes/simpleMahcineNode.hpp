@@ -2,7 +2,10 @@
 
 #include <ImNodeFlow.h>
 #include <memory>
+#include <nlohmann/json.hpp>
+
 #include "Util/ingredient.hpp"
+#include "Util/nodeTypes.hpp"
 
 class SimpleMachineNode : public ImFlow::BaseNode
 {
@@ -18,7 +21,7 @@ public:
     static const size_t TEXT_INPUT_MAX_LENGTH = 128;
 
 protected:
-    auto formatInputIngridients(const char *category, const char *prefix, std::vector<Ingredient> &list,
+    auto formatInputIngredients(const char *category, const char *prefix, std::vector<Ingredient> &list,
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool;
     auto calcEfficiency() -> double;
     auto calcOptimalCount() -> double;
@@ -33,4 +36,6 @@ public:
     inline const std::vector<Ingredient>& getInList() const { return ins; }
     inline const std::vector<Ingredient>& getOutList() const { return outs; }
     const auto print() -> void const;
+    virtual const auto getNodeType() -> NodeType const;
+    virtual auto serialize() -> nlohmann::json const;
 };

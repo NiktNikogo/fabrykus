@@ -5,9 +5,10 @@
 #include <format>
 #include <string>
 
+#include "Util/ingredient.hpp"
+
 SimpleMachineNode::SimpleMachineNode() : fuel(1.0), time(1.0), inPins(), outPins{}
 {
-
     ins = {{1, "Iron ore"}};
     outs = {{2, "Iron ingot"}};
     setTitle("Machine");
@@ -46,11 +47,11 @@ auto SimpleMachineNode::draw() -> void
 
 auto SimpleMachineNode::drawInspector() -> void
 {
-    if (formatInputIngridients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid) { this->dropIN(uid); }))
+    if (formatInputIngredients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid) { this->dropIN(uid); }))
     {
         return;
     }
-    if (formatInputIngridients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid) { this->dropOUT(uid); }))
+    if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid) { this->dropOUT(uid); }))
     {
         return;
     }
@@ -237,7 +238,23 @@ const auto SimpleMachineNode::print() -> void const
     std::cout << "-----------\n";
 }
 
-auto SimpleMachineNode::formatInputIngridients(const char *category, const char *prefix,
+const auto SimpleMachineNode::getNodeType() -> NodeType const
+{
+    return NodeType::MACHINE;
+}
+
+auto SimpleMachineNode::serialize() -> nlohmann::json const
+{
+    nlohmann::json node;
+    node["type"] = getNodeType();
+    node["time"] = time;
+    node["fuel"] = fuel;
+    node["ins"] = ins;
+    node["outs"] = outs;
+    return node;
+}
+
+auto SimpleMachineNode::formatInputIngredients(const char *category, const char *prefix,
                                                std::vector<Ingredient> &list,
                                                const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool
 {

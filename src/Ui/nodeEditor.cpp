@@ -3,7 +3,7 @@
 #include "nodeEditor.hpp"
 #include "Nodes/simpleMahcineNode.hpp"
 #include "Nodes/productNode.hpp"
-#include "Nodes/ingridientNode.hpp"
+#include "Nodes/ingredientNode.hpp"
 NodeEditor::NodeEditor(size_t gridSize)
     : size({(float)gridSize, (float)gridSize}), grid("Editor"), digraph()
 {
@@ -67,7 +67,7 @@ auto NodeEditor::draw() -> void
                 }
                 if (ImGui::MenuItem("Source"))
                 {
-                    this->addNodeAtMouse<IngridientNode>();
+                    this->addNodeAtMouse<IngredientNode>();
                 }
                 ImGui::EndMenu();
             }
@@ -106,4 +106,16 @@ auto NodeEditor::update(ImVec2 size) -> void
 {
     this->setSize(size);
     this->size = size;
+}
+
+auto NodeEditor::save() -> void const
+{
+    auto nodes = grid.getNodes();
+    if(nodes.size() < 1) {
+        std::cout << "no nodes\n" << '\n'; 
+    }
+    for (const auto& [id, node] : nodes) {
+        auto myNode = std::dynamic_pointer_cast<SimpleMachineNode>(node);
+        std::cout << myNode->serialize().dump() << '\n';
+    }
 }

@@ -12,7 +12,7 @@
 #include "Ui/nodeInspector.hpp"
 #include "Ui/menuBuilder.hpp"
 #include "Nodes/simpleMahcineNode.hpp"
-#include "Nodes/ingridientNode.hpp"
+#include "Nodes/ingredientNode.hpp"
 #include "Nodes/productNode.hpp"
 
 static void glfw_error_callback(int error, const char *description)
@@ -89,7 +89,9 @@ int main(int, char **)
 
         MenuBuilder(1.5f)
             .beginMenu("File")
-                .addItem("Save", "Ctrl+S", {})
+                .addItem("Save", "Ctrl+S", [&editor]() {
+                    editor->save();
+                })
                 .addItem("Open", "Ctrl+O", {})
                 .addItem("Exit", "", {})
             .endMenu()

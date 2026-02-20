@@ -1,12 +1,12 @@
 #pragma once
-
 #include "Nodes/simpleMahcineNode.hpp"
 #include "Util/nodeTypes.hpp"
 
-class ProductNode : public SimpleMachineNode {
+class IngredientNode : public SimpleMachineNode
+{
 
 public:
-    ProductNode();
+    IngredientNode();
     auto draw() -> void override;
     auto update() -> void;
     auto syncPins() -> void override;

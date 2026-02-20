@@ -74,9 +74,14 @@ auto ProductNode::syncPins() -> void
 
 auto ProductNode::drawInspector() -> void
 {
-    if (formatInputIngridients("Input:", "in", ins, this->getIns(), [this](uintptr_t uid)
+    if (formatInputIngredients("Input:", "in", ins, this->getIns(), [this](uintptr_t uid)
                                { this->dropIN(uid); }))
     {
         return;
     }
+}
+
+const auto ProductNode::getNodeType() -> NodeType const 
+{
+    return NodeType::PRODUCT;
 }

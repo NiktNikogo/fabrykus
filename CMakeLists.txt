@@ -58,7 +58,7 @@ add_library(app_lib STATIC
     src/Ui/menuBuilder.cpp
     src/Nodes/simpleMahcineNode.cpp
     src/Nodes/productNode.cpp
-    src/Nodes/ingridientNode.cpp
+    src/Nodes/ingredientNode.cpp
     src/Util/digraph.cpp
 
 )
