@@ -14,7 +14,6 @@ private:
     ImFlow::ImNodeFlow grid;
     ImVec2 size;
     DiGraph digraph;
-    bool isFileDialogOpen = false;
 
     const ImGuiWindowFlags editorFlags = ImGuiWindowFlags_NoTitleBar |
                              ImGuiWindowFlags_NoResize |
@@ -25,7 +24,9 @@ private:
 
 private:
     auto serializeLinks() -> nlohmann::json;
-
+    auto collectData() -> nlohmann::json;
+    auto parseNodes(nlohmann::json nodes) -> void;
+    auto parseLinks(nlohmann::json links) -> void;
 public:
     NodeEditor(size_t gridSize);
 
@@ -42,7 +43,6 @@ public:
     inline auto printGraph() const -> void { digraph.printGraph(); };
     auto getSelectedNode() -> std::shared_ptr<SimpleMachineNode>;
     auto update(ImVec2 size) -> void;
-    auto collectData() -> nlohmann::json;
     auto saveToFile(const std::string& path) -> void;
-
+    auto loadFromAFile(const std::string& path) -> void;
 };

@@ -20,6 +20,15 @@ IngredientNode::IngredientNode(size_t id): SimpleMachineNode(id)
     syncPins();
 }
 
+IngredientNode::IngredientNode(size_t id, double time, std::vector<Ingredient> outs)
+    :
+    SimpleMachineNode(id, time, 1.0, {}, outs)
+{
+    setTitle("Source");
+    setStyle(ImFlow::NodeStyle::green());
+    syncPins();
+}
+
 auto IngredientNode::draw() -> void
 {
     ImGui::Text("UID: 0x%lX", this->getUID());

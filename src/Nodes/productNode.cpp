@@ -24,6 +24,15 @@ ProductNode::ProductNode(size_t id) : SimpleMachineNode(id)
     syncPins();
 }
 
+ProductNode::ProductNode(size_t id, std::vector<Ingredient> ins)
+    :
+    SimpleMachineNode(id, 1.0, 1.0, ins, {})
+{
+    setTitle("Storage");
+    setStyle(ImFlow::NodeStyle::red());
+    syncPins();
+}
+
 auto ProductNode::draw() -> void
 {
     ImGui::Text("UID: 0x%lX", this->getUID());

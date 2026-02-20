@@ -26,9 +26,18 @@ SimpleMachineNode::SimpleMachineNode(size_t id): id(id), fuel(1.0), time(1.0), i
 
     syncPins();
 }
-SimpleMachineNode::SimpleMachineNode(size_t time, size_t fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs)
+
+SimpleMachineNode::SimpleMachineNode(size_t id, double time, double fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs)
+    :
+    id(id),
+    time(time),
+    fuel(fuel),
+    ins(ins),
+    outs(outs)
 {
+    syncPins();
 }
+
 auto SimpleMachineNode::draw() -> void
 {
 

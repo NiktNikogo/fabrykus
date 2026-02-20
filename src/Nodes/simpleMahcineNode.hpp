@@ -30,7 +30,7 @@ protected:
 public:
     SimpleMachineNode();
     SimpleMachineNode(size_t id);
-    SimpleMachineNode(size_t time, size_t fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
+    SimpleMachineNode(size_t id, double time, double fuel, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
     virtual ~SimpleMachineNode() = default;
     auto draw() -> void override;
     virtual auto drawInspector() -> void;
