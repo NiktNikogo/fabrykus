@@ -13,5 +13,6 @@ public:
     auto update() -> void;
     auto syncPins() -> void override;
     auto drawInspector() -> void override;
+    auto deserialize(nlohmann::json data) -> void override;
     const auto getNodeType() const -> NodeType override;
 };

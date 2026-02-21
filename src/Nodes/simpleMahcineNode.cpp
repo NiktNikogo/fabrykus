@@ -8,14 +8,9 @@
 
 #include "Util/ingredient.hpp"
 
-SimpleMachineNode::SimpleMachineNode() : fuel(1.0), time(1.0), inPins(), outPins{}
+SimpleMachineNode::SimpleMachineNode() : fuel(0.0), time(0.0), inPins(), outPins{}
 {
-    ins = {{1, "Iron ore"}};
-    outs = {{2, "Iron ingot"}};
-    setTitle("Machine");
-    setStyle(ImFlow::NodeStyle::cyan());
 
-    syncPins();
 }
 SimpleMachineNode::SimpleMachineNode(size_t id): id(id), fuel(1.0), time(1.0), inPins(), outPins{}
 {
@@ -222,6 +217,23 @@ auto SimpleMachineNode::serialize() -> nlohmann::json
         {"y", getPos().y}        
     });
     return node;
+}
+
+auto SimpleMachineNode::deserialize(nlohmann::json data) -> void
+{
+    setTitle("Machine");
+    setStyle(ImFlow::NodeStyle::cyan());
+
+
+    id = data["id"];
+    fuel = data["fuel"];
+    time = data["time"];
+    ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
+    setPos(pos);
+    ins = data["ins"].get<std::vector<Ingredient>>();
+    outs = data["outs"].get<std::vector<Ingredient>>();
+
+    syncPins();
 }
 
 const auto SimpleMachineNode::getInPinIndex(ImFlow::Pin* pin) const -> size_t 

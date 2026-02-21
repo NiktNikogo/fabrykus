@@ -44,6 +44,7 @@ public:
     const auto print() const -> void;
     virtual const auto getNodeType() const -> NodeType;
     virtual auto serialize() -> nlohmann::json;
+    virtual auto deserialize(nlohmann::json data) -> void;
     const auto getInPinIndex(ImFlow::Pin *pin) const -> size_t;
     const auto getOutPinIndex(ImFlow::Pin *pin) const -> size_t;
 };

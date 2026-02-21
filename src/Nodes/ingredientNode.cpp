@@ -2,12 +2,6 @@
 
 IngredientNode::IngredientNode() : SimpleMachineNode()
 {
-    ins.clear();
-    outs.clear();
-    outs.push_back({1, "Iron ore"});
-    setTitle("Source");
-    setStyle(ImFlow::NodeStyle::green());
-    syncPins();
 }
 
 IngredientNode::IngredientNode(size_t id): SimpleMachineNode(id)
@@ -79,6 +73,20 @@ auto IngredientNode::drawInspector() -> void
     {
         return;
     }
+}
+
+auto IngredientNode::deserialize(nlohmann::json data) -> void
+{
+    setTitle("Source");
+    setStyle(ImFlow::NodeStyle::green());
+
+    id = data["id"];
+    time = data["time"];
+    ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
+    setPos(pos);
+    outs = data["outs"].get<std::vector<Ingredient>>();
+ 
+    syncPins();
 }
 
 const auto IngredientNode::getNodeType() const -> NodeType  

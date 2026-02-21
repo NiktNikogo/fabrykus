@@ -175,36 +175,24 @@ auto NodeEditor::parseNodes(nlohmann::json nodes) -> void
         switch (type)
         {
         case NodeType::MACHINE:
-        {
-            double fuel = data["fuel"];
-            double time = data["time"];
-            ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
-            std::vector<Ingredient> ins = data["ins"].get<std::vector<Ingredient>>();
-            std::vector<Ingredient> outs = data["outs"].get<std::vector<Ingredient>>();
-            
-            auto node = grid.placeNode<SimpleMachineNode>(id, fuel, time, ins, outs);
-            node->setPos(pos);
+        {            
+            auto node = grid.placeNode<SimpleMachineNode>();
+            node->deserialize(data);
             digraph.addNode(node->getUID());
         }
         break;
         case NodeType::INGREDIENT:
         {
-            double time = data["time"];
-            ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
-            std::vector<Ingredient> outs = data["outs"].get<std::vector<Ingredient>>();
-
-            auto node = grid.placeNode<IngredientNode>(id, time, outs);
-            node->setPos(pos);
+     
+            auto node = grid.placeNode<IngredientNode>();
+            node->deserialize(data);
             digraph.addNode(node->getUID());
         }
         break;
         case NodeType::PRODUCT:
         {
-            ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
-            std::vector<Ingredient> ins = data["ins"].get<std::vector<Ingredient>>();
-
-            auto node = grid.placeNode<ProductNode>(id, ins);
-            node->setPos(pos);
+            auto node = grid.placeNode<ProductNode>();
+            node->deserialize(data);
             digraph.addNode(node->getUID());
         }
         break;

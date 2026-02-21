@@ -1,15 +1,9 @@
 #include "productNode.hpp"
+#include "Util/ingredient.hpp"
 
 ProductNode::ProductNode() : SimpleMachineNode()
 {
-    ins.clear();
-    outs.clear();
-    ins.push_back({2, "Iron ingot"});
-    time = 1;
-    setTitle("Storage");
-    setStyle(ImFlow::NodeStyle::red());
-
-    syncPins();
+ 
 }
 
 ProductNode::ProductNode(size_t id) : SimpleMachineNode(id)
@@ -106,4 +100,16 @@ auto ProductNode::drawInspector() -> void
 const auto ProductNode::getNodeType() const -> NodeType 
 {
     return NodeType::PRODUCT;
+}
+
+auto ProductNode::deserialize(nlohmann::json data) -> void 
+{
+    setTitle("Storage");
+    setStyle(ImFlow::NodeStyle::red());
+
+    id = data["id"];
+    ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
+    setPos(pos);
+    ins = data["ins"].get<std::vector<Ingredient>>();
+    syncPins();
 }
