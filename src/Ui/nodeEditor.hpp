@@ -21,12 +21,6 @@ private:
                              ImGuiWindowFlags_NoScrollbar |
                              ImGuiWindowFlags_NoCollapse |
                              ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-private:
-    auto serializeLinks() -> nlohmann::json;
-    auto collectData() -> nlohmann::json;
-    auto parseNodes(nlohmann::json nodes) -> void;
-    auto parseLinks(nlohmann::json links) -> void;
 public:
     NodeEditor(size_t gridSize);
 
@@ -45,4 +39,5 @@ public:
     auto update(ImVec2 size) -> void;
     auto saveToFile(const std::string& path) -> void;
     auto loadFromAFile(const std::string& path) -> void;
+    auto setNewId(size_t id) -> void {idCounter = id;};
 };
