@@ -1,4 +1,4 @@
-#include "simpleMahcineNode.hpp"
+#include "simpleMachineNode.hpp"
 
 #include <ImNodeFlow.h>
 #include <format>
@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "Util/ingredient.hpp"
+#include "Util/nodeFactory.hpp"
 
 SimpleMachineNode::SimpleMachineNode() : fuel(0.0), time(0.0), inPins(), outPins{}
 {
@@ -16,7 +17,7 @@ SimpleMachineNode::SimpleMachineNode(size_t id): id(id), fuel(1.0), time(1.0), i
 {
     ins = {{1, "Iron ore"}};
     outs = {{2, "Iron ingot"}};
-    setTitle("Machine");
+    setTitle(NodeFactory::getNameFromType(type).c_str());
     setStyle(ImFlow::NodeStyle::cyan());
 
     syncPins();
@@ -198,11 +199,6 @@ const auto SimpleMachineNode::print() const -> void
     std::cout << "-----------\n";
 }
 
-const auto SimpleMachineNode::getNodeType() const -> NodeType
-{
-    return NodeType::MACHINE;
-}
-
 auto SimpleMachineNode::serialize() -> nlohmann::json
 {
     nlohmann::json node;
@@ -221,9 +217,9 @@ auto SimpleMachineNode::serialize() -> nlohmann::json
 
 auto SimpleMachineNode::deserialize(nlohmann::json data) -> void
 {
-    setTitle("Machine");
+    
+    setTitle(NodeFactory::getNameFromType(type).c_str());
     setStyle(ImFlow::NodeStyle::cyan());
-
 
     id = data["id"];
     fuel = data["fuel"];

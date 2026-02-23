@@ -61,14 +61,15 @@ target_include_directories(json_lib INTERFACE third_party)
 
 # --- 5. my staff ---
 add_library(app_lib STATIC
-    src/Internal/NodeEditorIO.cpp
+    src/Internal/nodeEditorIO.cpp
     src/Ui/nodeEditor.cpp
     src/Ui/nodeInspector.cpp
     src/Ui/menuBuilder.cpp
-    src/Nodes/simpleMahcineNode.cpp
+    src/Nodes/simpleMachineNode.cpp
     src/Nodes/productNode.cpp
     src/Nodes/ingredientNode.cpp
     src/Util/digraph.cpp
+    src/Util/nodeFactory.hpp
 
 )
 

@@ -1,4 +1,6 @@
 #include "ingredientNode.hpp"
+#include "Util/nodeFactory.hpp"
+
 
 IngredientNode::IngredientNode() : SimpleMachineNode()
 {
@@ -9,7 +11,7 @@ IngredientNode::IngredientNode(size_t id): SimpleMachineNode(id)
     ins.clear();
     outs.clear();
     outs.push_back({1, "Iron ore"});
-    setTitle("Source");
+    setTitle(NodeFactory::getNameFromType(type).c_str());
     setStyle(ImFlow::NodeStyle::green());
     syncPins();
 }
@@ -18,7 +20,7 @@ IngredientNode::IngredientNode(size_t id, double time, std::vector<Ingredient> o
     :
     SimpleMachineNode(id, time, 1.0, {}, outs)
 {
-    setTitle("Source");
+    setTitle(NodeFactory::getNameFromType(type).c_str());
     setStyle(ImFlow::NodeStyle::green());
     syncPins();
 }
@@ -87,9 +89,4 @@ auto IngredientNode::deserialize(nlohmann::json data) -> void
     outs = data["outs"].get<std::vector<Ingredient>>();
  
     syncPins();
-}
-
-const auto IngredientNode::getNodeType() const -> NodeType  
-{
-    return NodeType::INGREDIENT;
 }

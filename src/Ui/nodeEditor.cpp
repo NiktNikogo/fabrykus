@@ -3,11 +3,11 @@
 #include <fstream>
 
 #include "nodeEditor.hpp"
-#include "Nodes/simpleMahcineNode.hpp"
+#include "Nodes/simpleMachineNode.hpp"
 #include "Nodes/productNode.hpp"
 #include "Nodes/ingredientNode.hpp"
-#include "Internal/NodeEditorIO.hpp"
-
+#include "Internal/nodeEditorIO.hpp"
+#include "Util/nodeFactory.hpp"
 
 NodeEditor::NodeEditor(size_t gridSize)
     : size({(float)gridSize, (float)gridSize}), grid("Editor"), digraph()
@@ -76,19 +76,14 @@ auto NodeEditor::draw() -> void
 
         if (ImGui::BeginPopup("NodeEditorContext"))
         {
+
+
             if (ImGui::BeginMenu("Machines"))
             {
-                if (ImGui::MenuItem("Machine"))
-                {
-                    this->addNodeAtMouse<SimpleMachineNode>();
-                }
-                if (ImGui::MenuItem("Storage"))
-                {
-                    this->addNodeAtMouse<ProductNode>();
-                }
-                if (ImGui::MenuItem("Source"))
-                {
-                    this->addNodeAtMouse<IngredientNode>();
+                for(auto const &item: NodeFactory::typeNameList) {
+                    if(ImGui::MenuItem(item.name.c_str())) {
+                        NodeFactory::addNode(item.type, getNewId(), grid, digraph);
+                    }
                 }
                 ImGui::EndMenu();
             }

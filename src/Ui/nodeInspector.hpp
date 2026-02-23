@@ -2,7 +2,7 @@
 #include <imgui.h>
 #include <ImNodeFlow.h>
 
-#include "Nodes/simpleMahcineNode.hpp"
+#include "Nodes/simpleMachineNode.hpp"
 
 
 

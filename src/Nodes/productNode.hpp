@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Nodes/simpleMahcineNode.hpp"
+#include "Nodes/simpleMachineNode.hpp"
 #include "Util/nodeTypes.hpp"
 
 class ProductNode : public SimpleMachineNode {
 
+public:
+    const NodeType type = NodeType::PRODUCT;
 public:
     ProductNode();
     ProductNode(size_t id);
@@ -14,5 +16,4 @@ public:
     auto syncPins() -> void override;
     auto drawInspector() -> void override;
     auto deserialize(nlohmann::json data) -> void override;
-    const auto getNodeType() const -> NodeType override;
 };

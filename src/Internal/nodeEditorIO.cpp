@@ -1,10 +1,11 @@
-#include "NodeEditorIO.hpp"
+#include "nodeEditorIO.hpp"
 
-#include "Nodes/simpleMahcineNode.hpp"
+#include <fstream>
+
+#include "Nodes/simpleMachineNode.hpp"
 #include "Nodes/ingredientNode.hpp"
 #include "Nodes/productNode.hpp"
-#include "fstream"
-
+#include "Util/nodeFactory.hpp"
 
 auto NodeEditorIO::serializeLinks(ImFlow::ImNodeFlow &grid) -> nlohmann::json
 {
@@ -61,26 +62,9 @@ auto NodeEditorIO::parseNodes(ImFlow::ImNodeFlow &grid, nlohmann::json nodes, Di
         switch (type)
         {
         case NodeType::MACHINE:
-        {            
-            auto node = grid.placeNode<SimpleMachineNode>();
-            node->deserialize(data);
-            digraph.addNode(node->getUID());
-        }
-        break;
         case NodeType::INGREDIENT:
-        {
-     
-            auto node = grid.placeNode<IngredientNode>();
-            node->deserialize(data);
-            digraph.addNode(node->getUID());
-        }
-        break;
         case NodeType::PRODUCT:
-        {
-            auto node = grid.placeNode<ProductNode>();
-            node->deserialize(data);
-            digraph.addNode(node->getUID());
-        }
+            NodeFactory::createNode(type, data, grid, digraph);
         break;
         default:
             std::cout << "Bad data\n";

@@ -13,7 +13,7 @@
 #include "Ui/nodeEditor.hpp"
 #include "Ui/nodeInspector.hpp"
 #include "Ui/menuBuilder.hpp"
-#include "Nodes/simpleMahcineNode.hpp"
+#include "Nodes/simpleMachineNode.hpp"
 #include "Nodes/ingredientNode.hpp"
 #include "Nodes/productNode.hpp"
 

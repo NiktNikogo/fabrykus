@@ -1,5 +1,6 @@
 #include "productNode.hpp"
 #include "Util/ingredient.hpp"
+#include "Util/nodeFactory.hpp"
 
 ProductNode::ProductNode() : SimpleMachineNode()
 {
@@ -12,7 +13,7 @@ ProductNode::ProductNode(size_t id) : SimpleMachineNode(id)
     outs.clear();
     ins.push_back({2, "Iron ingot"});
     time = 1;
-    setTitle("Storage");
+    setTitle(NodeFactory::getNameFromType(type).c_str());
     setStyle(ImFlow::NodeStyle::red());
 
     syncPins();
@@ -22,7 +23,7 @@ ProductNode::ProductNode(size_t id, std::vector<Ingredient> ins)
     :
     SimpleMachineNode(id, 1.0, 1.0, ins, {})
 {
-    setTitle("Storage");
+    setTitle(NodeFactory::getNameFromType(type).c_str());
     setStyle(ImFlow::NodeStyle::red());
     syncPins();
 }
@@ -95,11 +96,6 @@ auto ProductNode::drawInspector() -> void
     {
         return;
     }
-}
-
-const auto ProductNode::getNodeType() const -> NodeType 
-{
-    return NodeType::PRODUCT;
 }
 
 auto ProductNode::deserialize(nlohmann::json data) -> void 

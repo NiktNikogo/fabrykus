@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Util/digraph.hpp"
-#include "Nodes/simpleMahcineNode.hpp"
+#include "Nodes/simpleMachineNode.hpp"
 
 class NodeEditor : public ImFlow::BaseNode
 {
