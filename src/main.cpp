@@ -60,6 +60,7 @@ int main(int, char **)
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+    io.IniFilename = nullptr;
 
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -70,6 +71,8 @@ int main(int, char **)
     size_t size = 500;
     auto editor = std::make_unique<NodeEditor>(size);
     auto inspector = std::make_unique<NodeInspector>();
+   
+
 
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr;
@@ -89,7 +92,7 @@ int main(int, char **)
             editor->printGraph();
         }
 
-        MenuBuilder(1.5f)
+        MenuBuilder(1.3f)
             .beginMenu("File")
                 .addItem("Save", "Ctrl+S", [&editor]() {
                     IGFD::FileDialogConfig config;
