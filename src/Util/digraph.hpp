@@ -1,9 +1,13 @@
 #pragma once
 
 #include <ImNodeFlow.h>
-#include "graphNode.hpp"
 #include <optional>
 #include <unordered_map>
+#include <imgui.h>
+
+#include "graphNode.hpp"
+
+
 class DiGraph
 {
 private:
@@ -31,4 +35,5 @@ public:
     auto getMaxDepth() const -> std::optional<size_t>;
     auto getNodesAtDepth(size_t targetDepth) const -> std::vector<Id>;
     auto printByDepth() const -> void;
+    auto calculatePositions(const std::map<Id, ImVec2>& nodeSizes) const -> std::optional<std::map<Id, ImVec2>>;
 };

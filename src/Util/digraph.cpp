@@ -287,3 +287,49 @@ auto DiGraph::printByDepth() const -> void
         std::cout << "\n";
     }
 }
+
+auto DiGraph::calculatePositions(const std::map<Id, ImVec2>& nodeSizes) const -> std::optional<std::map<Id, ImVec2>>
+{
+    auto depths = calcNodeDepths();
+    if (!depths.has_value()) {
+        return std::nullopt;
+    }
+
+    size_t maxDepth = 0;
+    for (const auto& [id, depth] : *depths) {
+        maxDepth = std::max(maxDepth, depth);
+    }
+
+    std::map<size_t, std::vector<Id>> results;
+    for (const auto& [id, depth] : *depths) {
+        results[depth].push_back(id);
+    }
+
+    std::map<Id, ImVec2> newPositions{};
+    float currentX = 0.0f;
+    float columnGap = 100.0f;
+    float nodeGap = 40.0f;
+
+    for(auto const& [depth, elements] : results) {
+        float maxColumnWidth = 0.0f;
+        float totalColumnHeight = 0.0f;
+
+
+        for(auto const& el : elements) {
+            auto size = nodeSizes.at(el);
+            maxColumnWidth = std::max(maxColumnWidth, size.x);
+            totalColumnHeight += size.y;
+        }
+        totalColumnHeight += nodeGap * (elements.size() - 1);
+
+        float currentY = -(totalColumnHeight / 2.0f);
+        for(auto const& el : elements) {
+            auto size = nodeSizes.at(el);
+            newPositions[el] = ImVec2{currentX, currentY};
+            currentY += size.y + nodeGap;
+        }
+        currentX += maxColumnWidth + columnGap;
+    }   
+
+    return newPositions;
+}

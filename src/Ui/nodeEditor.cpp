@@ -77,11 +77,12 @@ auto NodeEditor::draw() -> void
         if (ImGui::BeginPopup("NodeEditorContext"))
         {
 
-
             if (ImGui::BeginMenu("Machines"))
             {
-                for(auto const &item: NodeFactory::typeNameList) {
-                    if(ImGui::MenuItem(item.name.c_str())) {
+                for (auto const &item : NodeFactory::typeNameList)
+                {
+                    if (ImGui::MenuItem(item.name.c_str()))
+                    {
                         NodeFactory::addNode(item.type, getNewId(), grid, digraph);
                     }
                 }
@@ -93,7 +94,7 @@ auto NodeEditor::draw() -> void
 
                 if (ImGui::MenuItem("Sort nodes", "Ctrl+D"))
                 {
-                    std::cout << "sort pog?\n";
+                    arrangeNodes();
                 }
 
                 ImGui::EndMenu();
@@ -153,4 +154,35 @@ auto NodeEditor::saveToFile(const std::string &path) -> void
 auto NodeEditor::loadFromAFile(const std::string &path) -> void
 {
     idCounter = NodeEditorIO::load(path, grid, digraph);
+}
+
+auto NodeEditor::arrangeNodes() -> void
+{
+    digraph.clearEdges();
+    for (const auto &link : grid.getLinks())
+    {
+        auto locked = link.lock();
+        auto left = locked->left()->getParent()->getUID();
+        auto right = locked->right()->getParent()->getUID();
+        if (!digraph.hasEdge(left, right))
+        {
+            digraph.addEdge(left, right);
+        }
+    }
+
+    std::map<ImFlow::NodeUID, ImVec2> nodeSizes{};
+    for(const auto& [id, node] : grid.getNodes()) {
+      nodeSizes[id] = node->getSize();
+    }
+
+    auto newPositionsOpt = digraph.calculatePositions(nodeSizes);
+
+    if(!newPositionsOpt.has_value()) return;
+
+    auto newPositions = *newPositionsOpt;
+    auto mousePos = grid.screen2grid(ImGui::GetMousePos());
+    for(auto& [id, node] : grid.getNodes()) {
+        auto newPos = newPositions[id] + ImVec2{mousePos.x, mousePos.y};
+        node->setPos(newPos);
+    }
 }

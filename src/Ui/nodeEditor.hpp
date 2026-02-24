@@ -40,4 +40,5 @@ public:
     auto saveToFile(const std::string& path) -> void;
     auto loadFromAFile(const std::string& path) -> void;
     auto setNewId(size_t id) -> void {idCounter = id;};
+    auto arrangeNodes() -> void;
 };
