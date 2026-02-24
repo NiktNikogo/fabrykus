@@ -6,8 +6,6 @@
 class ProductNode : public SimpleMachineNode {
 
 public:
-    const NodeType type = NodeType::PRODUCT;
-public:
     ProductNode();
     ProductNode(size_t id);
     ProductNode(size_t id, std::vector<Ingredient> ins);

@@ -4,11 +4,12 @@
 
 ProductNode::ProductNode() : SimpleMachineNode()
 {
- 
+    type = NodeType::PRODUCT;
 }
 
 ProductNode::ProductNode(size_t id) : SimpleMachineNode(id)
 {
+    type = NodeType::PRODUCT;
     ins.clear();
     outs.clear();
     ins.push_back({2, "Iron ingot"});
@@ -23,6 +24,7 @@ ProductNode::ProductNode(size_t id, std::vector<Ingredient> ins)
     :
     SimpleMachineNode(id, 1.0, 1.0, ins, {})
 {
+    type = NodeType::PRODUCT;
     setTitle(NodeFactory::getNameFromType(type).c_str());
     setStyle(ImFlow::NodeStyle::red());
     syncPins();

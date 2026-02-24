@@ -21,7 +21,7 @@ protected:
 
 public:
     static const size_t TEXT_INPUT_MAX_LENGTH = 128;
-    const NodeType type = NodeType::MACHINE;
+    NodeType type = NodeType::MACHINE;
 protected:
     auto formatInputIngredients(const char *category, const char *prefix, std::vector<Ingredient> &list,
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool;
@@ -43,7 +43,7 @@ public:
     inline ImFlow::Pin* getOutListElement(size_t idx) const {return outPins[idx];}
     inline const size_t getId() const { return id; }
     const auto print() const -> void;
-    inline const auto getNodeType() const -> NodeType {return type;};
+    virtual const auto getNodeType() const -> NodeType {return type;};
     virtual auto serialize() -> nlohmann::json;
     virtual auto deserialize(nlohmann::json data) -> void;
     const auto getInPinIndex(ImFlow::Pin *pin) const -> size_t;

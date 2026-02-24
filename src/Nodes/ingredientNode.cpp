@@ -4,10 +4,12 @@
 
 IngredientNode::IngredientNode() : SimpleMachineNode()
 {
+    type = NodeType::INGREDIENT;
 }
 
 IngredientNode::IngredientNode(size_t id): SimpleMachineNode(id)
 {
+    type = NodeType::INGREDIENT;
     ins.clear();
     outs.clear();
     outs.push_back({1, "Iron ore"});
@@ -20,6 +22,7 @@ IngredientNode::IngredientNode(size_t id, double time, std::vector<Ingredient> o
     :
     SimpleMachineNode(id, time, 1.0, {}, outs)
 {
+    type = NodeType::INGREDIENT;
     setTitle(NodeFactory::getNameFromType(type).c_str());
     setStyle(ImFlow::NodeStyle::green());
     syncPins();

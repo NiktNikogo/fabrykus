@@ -5,10 +5,6 @@
 class IngredientNode : public SimpleMachineNode
 {
 
-
-public:
-    const NodeType type = NodeType::PRODUCT;
-
 public:
     IngredientNode();
     IngredientNode(size_t id);
