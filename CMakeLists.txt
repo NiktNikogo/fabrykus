@@ -19,9 +19,10 @@ target_compile_definitions(imnodeflow PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
 
 # ImGuiFileDialog
 add_library(imguifiledialog STATIC third_party/ImGuiFileDialog/ImGuiFileDialog.cpp) 
-target_compile_definitions(imguifiledialog PRIVATE USE_STD_FILESYSTEM) 
 target_include_directories(imguifiledialog PUBLIC third_party/ImGuiFileDialog) 
 target_link_libraries(imguifiledialog PUBLIC imgui::imgui) 
+target_compile_definitions(imguifiledialog PRIVATE USE_STD_FILESYSTEM) 
+
 
 # my staff
 add_library(app_lib STATIC
