@@ -1,65 +1,29 @@
 cmake_minimum_required(VERSION 3.16)
-project(MyApp VERSION 0.1.0 LANGUAGES C CXX)
+project(MyApp VERSION 0.1.0 LANGUAGES C CXX) 
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 20) 
+set(CMAKE_CXX_STANDARD_REQUIRED ON) 
 
-# --- 1. GLFW ---
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+find_package(Boost REQUIRED COMPONENTS graph) 
+find_package(glfw3 CONFIG REQUIRED) 
+find_package(imgui CONFIG REQUIRED) 
+find_package(nlohmann_json CONFIG REQUIRED) 
+find_package(OpenGL REQUIRED) 
 
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+# ImNodeFlow
+add_library(imnodeflow STATIC third_party/ImNodeFlow/src/ImNodeFlow.cpp) 
+target_include_directories(imnodeflow PUBLIC third_party/ImNodeFlow/include) 
 
-set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_X11 ON CACHE BOOL "" FORCE)
+target_link_libraries(imnodeflow PUBLIC imgui::imgui) 
+target_compile_definitions(imnodeflow PUBLIC IMGUI_DEFINE_MATH_OPERATORS) 
 
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+# ImGuiFileDialog
+add_library(imguifiledialog STATIC third_party/ImGuiFileDialog/ImGuiFileDialog.cpp) 
+target_compile_definitions(imguifiledialog PRIVATE USE_STD_FILESYSTEM) 
+target_include_directories(imguifiledialog PUBLIC third_party/ImGuiFileDialog) 
+target_link_libraries(imguifiledialog PUBLIC imgui::imgui) 
 
-add_subdirectory(third_party/glfw)
-find_package(OpenGL REQUIRED)
-
-# --- 2. ImGui ---
-add_library(imgui STATIC
-    third_party/imgui/imgui.cpp
-    third_party/imgui/imgui_draw.cpp
-    third_party/imgui/imgui_tables.cpp
-    third_party/imgui/imgui_widgets.cpp
-    third_party/imgui/backends/imgui_impl_glfw.cpp
-    third_party/imgui/backends/imgui_impl_opengl3.cpp
-)
-target_include_directories(imgui PUBLIC third_party/imgui third_party/imgui/backends)
-target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
-
-# FIX FOR THE ERROR:
-target_compile_definitions(imgui PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
-
-# --- 3. ImNodeFlow ---
-add_library(imnodeflow STATIC third_party/ImNodeFlow/src/ImNodeFlow.cpp)
-target_include_directories(imnodeflow PUBLIC third_party/ImNodeFlow/include)
-target_link_libraries(imnodeflow PUBLIC imgui)
-
-# FIX FOR THE ERROR:
-target_compile_definitions(imnodeflow PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
-
-# dialog
-add_library(imguifiledialog STATIC 
-    third_party/ImGuiFileDialog/ImGuiFileDialog.cpp
-)
-target_compile_definitions(imguifiledialog PRIVATE USE_STD_FILESYSTEM)
-target_include_directories(imguifiledialog PUBLIC third_party/ImGuiFileDialog)
-target_link_libraries(imguifiledialog PUBLIC imgui)
-
-# --- 4. nlohmann ---
-add_library(json_lib INTERFACE)
-
-target_include_directories(json_lib INTERFACE third_party)
-
-# --- 5. my staff ---
+# my staff
 add_library(app_lib STATIC
     src/Internal/nodeEditorIO.cpp
     src/Ui/nodeEditor.cpp
@@ -70,15 +34,26 @@ add_library(app_lib STATIC
     src/Nodes/ingredientNode.cpp
     src/Util/digraph.cpp
     src/Util/nodeFactory.hpp
+) 
 
-)
+target_include_directories(app_lib PUBLIC src) 
+# linking
+target_link_libraries(app_lib PUBLIC 
+    imgui::imgui 
+    imnodeflow 
+    imguifiledialog 
+    nlohmann_json::nlohmann_json
+    Boost::graph
+) 
 
-target_include_directories(app_lib PUBLIC src)
-target_link_libraries(app_lib PUBLIC imgui imnodeflow imguifiledialog json_lib)
-
-# --- 6. Main Application ---
+# main
 add_executable(app src/main.cpp)
-target_link_libraries(app PRIVATE imgui imnodeflow glfw OpenGL::GL app_lib)
+target_link_libraries(app PRIVATE 
+    app_lib 
+    glfw 
+    imgui::imgui
+    OpenGL::GL
+)
 
 if (WIN32)
     target_link_libraries(app PRIVATE gdi32 user32 shell32 imm32)
