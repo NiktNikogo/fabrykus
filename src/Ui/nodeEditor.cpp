@@ -15,7 +15,8 @@ NodeEditor::NodeEditor(size_t gridSize)
 }
 
 auto NodeEditor::draw() -> void
-{
+{   
+    ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(this->size);
     if (ImGui::Begin("Node Editor", nullptr, editorFlags))
     {
@@ -125,6 +126,12 @@ auto NodeEditor::update(ImVec2 size) -> void
 {
     this->setSize(size);
     this->size = size;
+
+    if (ImGuiFileDialog::Instance()->IsOpened()) {
+        ImVec2 screenSize = ImGui::GetIO().DisplaySize;
+        ImGui::SetNextWindowSize(ImVec2(screenSize.x * 0.8f, screenSize.y * 0.8f), ImGuiCond_Appearing);
+        ImGui::SetNextWindowPos(ImVec2(screenSize.x * 0.5f, screenSize.y * 0.5f), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    }
 
     if (ImGuiFileDialog::Instance()->Display("SaveProjectKey"))
     {
