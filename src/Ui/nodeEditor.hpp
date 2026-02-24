@@ -34,7 +34,7 @@ public:
     inline auto getNewId() -> size_t {return ++idCounter;};
     inline auto setSize(ImVec2 d) -> void { grid.setSize(d); }
     auto draw() -> void override;
-    inline auto printGraph() const -> void { digraph.printGraph(); };
+    inline auto printGraph() -> void { digraph.printGraph(); };
     auto getSelectedNode() -> std::shared_ptr<SimpleMachineNode>;
     auto update(ImVec2 size) -> void;
     auto saveToFile(const std::string& path) -> void;

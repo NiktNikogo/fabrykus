@@ -3,87 +3,111 @@
 #include <unordered_map>
 #include <queue>
 
-auto DiGraph::getNode(const Id &id) -> GraphNode *
-{
-    auto it = std::find_if(nodes.begin(), nodes.end(), [&id](const auto &n)
-                           { return n.data == id; });
-    return it != nodes.end() ? &(*it) : nullptr;
-}
-
-auto DiGraph::getNode(const Id &id) const -> const GraphNode *
-{
-    auto it = std::find_if(nodes.begin(), nodes.end(), [&id](const auto &n)
-                           { return n.data == id; });
-    return it != nodes.end() ? &(*it) : nullptr;
-}
-
 auto DiGraph::addEdge(const Id &parent, const Id &child) -> void
 {
-    auto *parentNode = getNode(parent);
-    auto *childNode = getNode(child);
-    if (parentNode && childNode)
+    if (hasNode(parent) && hasNode(child))
     {
-        parentNode->edges.push_back(std::make_shared<GraphNode>(*childNode));
+        boost::add_edge(idToVertex[parent], idToVertex[child], graph);
     }
 }
 
 auto DiGraph::addNode(const Id &id) -> void
 {
-    nodes.push_back(GraphNode{id, {}});
+    if (idToVertex.find(id) == idToVertex.end())
+    {
+        auto v = boost::add_vertex(id, graph);
+        idToVertex[id] = v;
+    }
+}
+
+auto DiGraph::getChildren(const Id &id) const -> std::vector<Id>
+{
+    std::vector<Id> children{};
+    auto it = idToVertex.find(id);
+    if (it == idToVertex.end())
+        return children;
+
+    Vertex u = it->second;
+    auto [begin, end] = boost::out_edges(u, graph);
+
+    for (auto el_it = begin; el_it != end; ++el_it)
+    {
+        Vertex v = boost::target(*el_it, graph);
+        children.push_back(graph[v]);
+    }
+    return children;
+}
+
+auto DiGraph::getNodes() -> std::vector<Id>
+{
+    std::vector<Id> ids;
+    for(auto const& [id, vertex] : idToVertex) {
+        ids.push_back(id);
+    }
+    return ids;
 }
 
 auto DiGraph::removeNode(const Id &id) -> void
 {
-    std::erase_if(nodes, [&id](const auto &n)
-                  { return n.data == id; });
+    auto it = idToVertex.find(id);
+    if (it == idToVertex.end())
+        return;
+    boost::clear_vertex(it->second, graph);
+    boost::remove_vertex(it->second, graph);
+    idToVertex.erase(it);
 }
 
-auto DiGraph::removeEdge(const Id &parent, const Id &id) -> void
+auto DiGraph::removeEdge(const Id &parent, const Id &child) -> void
 {
-    auto *node = getNode(parent);
-    if (node)
-    {
-        std::erase_if(node->edges, [&id](const auto &eRef)
-                      { return eRef->data == id; });
-    }
+    if (!hasNode(parent) || !hasNode(child)) return;
+    auto u = idToVertex.at(parent);
+    auto v = idToVertex.at(child);
+
+
+    auto edge = boost::edge(u, v, graph);
+    if (!edge.second)
+        return;
+    boost::remove_edge(edge.first, graph);
 }
 
 auto DiGraph::hasNode(const Id &id) const -> bool
 {
-    return getNode(id) != nullptr;
+    return idToVertex.find(id) != idToVertex.end();
 }
 
 auto DiGraph::hasEdge(const Id &parent, const Id &child) const -> bool
 {
-    auto *node = getNode(parent);
-    if (!node)
+    if (!hasNode(parent) || !hasNode(child))
         return false;
-    return std::any_of(node->edges.begin(), node->edges.end(), [&child](const auto &eRef)
-                       { return eRef->data == child; });
+    auto u = idToVertex.at(parent);
+    auto v = idToVertex.at(child);
+    
+    return boost::edge(u, v, graph).second;
 }
 
-auto DiGraph::printGraph() const -> void
+auto DiGraph::printGraph() -> void
 {
-    if (nodes.empty())
+    if (idToVertex.empty())
     {
         std::cout << "Graph is empty\n";
         return;
     }
 
     std::cout << "Graph:\n";
-    for (const auto &node : nodes)
+    for (const auto &node : getNodes())
     {
-        if (node.edges.empty())
+        auto children = getChildren(node);
+        if (children.empty())
         {
-            std::cout << std::format("  Node 0x{:X} -> (no edges)\n", node.data);
+            std::cout << std::format("  Node 0x{:X} -> (no edges)\n", node);
         }
         else
         {
-            std::cout << std::format("  Node 0x{:X} -> ", node.data);
-            for (size_t i = 0; i < node.edges.size(); ++i)
+            std::cout << std::format("  Node 0x{:X} -> ", node);
+            for (size_t i = 0; i < children.size(); ++i)
             {
-                std::cout << std::format("0x{:X}", node.edges[i]->data);
-                if (i < node.edges.size() - 1)
+                std::cout << std::format("0x{:X}", children[i]);
+                if (i < children.size())
                 {
                     std::cout << ", ";
                 }
@@ -93,81 +117,38 @@ auto DiGraph::printGraph() const -> void
     }
 }
 
-auto DiGraph::getNodes() const -> const std::vector<GraphNode> &
-{
-    return nodes;
-}
-
-auto DiGraph::getNodes() -> std::vector<GraphNode> &
-{
-    return nodes;
-}
-
 auto DiGraph::clearEdges() -> void
 {
-    std::for_each(nodes.begin(), nodes.end(), [](auto &n)
-                  { n.edges.clear(); });
+    auto [it, end] = boost::vertices(graph);
+    for(; it != end; ++it) {
+        boost::clear_vertex(*it, graph);
+    }
 }
 
 auto DiGraph::topologicalSort() const -> std::optional<std::vector<Id>>
 {
-    if (nodes.empty())
-    {
+    if(idToVertex.size() < 1) {
         return std::vector<Id>{};
+    } 
+
+
+    std::vector<Vertex> vertices;
+    
+    //czemu exception...
+    try {
+        boost::topological_sort(graph, std::back_inserter(vertices));
     }
-
-    std::unordered_map<Id, size_t> inDegree;
-    for (const auto &node : nodes)
-    {
-        inDegree[node.data] = 0;
-    }
-
-    for (const auto &node : nodes)
-    {
-        for (const auto &edge : node.edges)
-        {
-            inDegree[edge->data]++;
-        }
-    }
-
-    std::queue<Id> queue;
-    for (const auto &[id, degree] : inDegree)
-    {
-        if (degree == 0)
-        {
-            queue.push(id);
-        }
-    }
-
-    std::vector<Id> result;
-    result.reserve(nodes.size());
-
-    while (!queue.empty())
-    {
-        Id current = queue.front();
-        queue.pop();
-        result.push_back(current);
-
-        auto *node = getNode(current);
-        if (!node)
-            continue;
-
-        for (const auto &edge : node->edges)
-        {
-            inDegree[edge->data]--;
-            if (inDegree[edge->data] == 0)
-            {
-                queue.push(edge->data);
-            }
-        }
-    }
-
-    if (result.size() != nodes.size())
-    {
+    catch(const boost::not_a_dag& e) {
         return std::nullopt;
     }
 
-    return result;
+    std::vector<Id> rev;
+    rev.reserve(vertices.size());
+    for(auto it = vertices.rbegin(); it != vertices.rend(); ++it) {
+        rev.push_back(graph[*it]);
+    }
+
+    return rev;
 }
 
 auto DiGraph::printTopologicalSort() const -> void
@@ -187,9 +168,9 @@ auto DiGraph::printTopologicalSort() const -> void
     }
 }
 
-auto DiGraph::calcNodeDepths() const -> std::optional<std::unordered_map<Id, size_t>>
+auto DiGraph::calcNodeDepths() -> std::optional<std::unordered_map<Id, size_t>>
 {
-    if (nodes.empty())
+    if (idToVertex.empty())
     {
         return std::unordered_map<Id, size_t>{};
     }
@@ -202,85 +183,96 @@ auto DiGraph::calcNodeDepths() const -> std::optional<std::unordered_map<Id, siz
 
     std::unordered_map<Id, size_t> depths;
 
-    for (const auto &node : nodes)
+    for (const auto &node : getNodes())
     {
-        depths[node.data] = 0;
+        depths[node] = 0;
     }
 
     for (const auto &nodeId : *topoOrder)
     {
-        auto *node = getNode(nodeId);
-        if (!node)
+        auto children = getChildren(nodeId);
+        if (children.size() < 1)
             continue;
 
-        for (const auto &edge : node->edges)
+        for (const auto &child : children)
         {
-            depths[edge->data] = std::max(depths[edge->data], depths[nodeId] + 1);
+            depths[child] = std::max(depths[child], depths[nodeId] + 1);
         }
     }
 
     return depths;
 }
 
-auto DiGraph::getMaxDepth() const -> std::optional<size_t>
+auto DiGraph::getMaxDepth() -> std::optional<size_t>
 {
     auto depths = calcNodeDepths();
-    if (!depths.has_value()) {
+    if (!depths.has_value())
+    {
         return std::nullopt;
     }
-    
-    if (depths->empty()) {
+
+    if (depths->empty())
+    {
         return 0;
     }
-    
+
     size_t maxDepth = 0;
-    for (const auto& [id, depth] : *depths) {
+    for (const auto &[id, depth] : *depths)
+    {
         maxDepth = std::max(maxDepth, depth);
     }
-    
+
     return maxDepth;
 }
 
-auto DiGraph::getNodesAtDepth(size_t targetDepth) const -> std::vector<Id>
+auto DiGraph::getNodesAtDepth(size_t targetDepth) -> std::vector<Id>
 {
     auto depths = calcNodeDepths();
-    if (!depths.has_value()) {
+    if (!depths.has_value())
+    {
         return {};
     }
-    
+
     std::vector<Id> result;
-    for (const auto& [id, depth] : *depths) {
-        if (depth == targetDepth) {
+    for (const auto &[id, depth] : *depths)
+    {
+        if (depth == targetDepth)
+        {
             result.push_back(id);
         }
     }
-    
+
     return result;
 }
 
-auto DiGraph::printByDepth() const -> void
+auto DiGraph::printByDepth() -> void
 {
     auto depths = calcNodeDepths();
-    
-    if (!depths.has_value()) {
+
+    if (!depths.has_value())
+    {
         std::cout << "Cannot calculate depths: graph contains a cycle\n";
         return;
     }
-    
+
     auto maxDepth = getMaxDepth();
-    if (!maxDepth.has_value()) {
+    if (!maxDepth.has_value())
+    {
         std::cout << "Graph is empty\n";
         return;
     }
-    
+
     std::cout << "Nodes by depth:\n";
-    for (size_t depth = 0; depth <= *maxDepth; ++depth) {
+    for (size_t depth = 0; depth <= *maxDepth; ++depth)
+    {
         auto nodesAtDepth = getNodesAtDepth(depth);
-        
+
         std::cout << std::format("  Depth {}: ", depth);
-        for (size_t i = 0; i < nodesAtDepth.size(); ++i) {
+        for (size_t i = 0; i < nodesAtDepth.size(); ++i)
+        {
             std::cout << std::format("0x{:X}", nodesAtDepth[i]);
-            if (i < nodesAtDepth.size() - 1) {
+            if (i < nodesAtDepth.size() - 1)
+            {
                 std::cout << ", ";
             }
         }
@@ -288,20 +280,23 @@ auto DiGraph::printByDepth() const -> void
     }
 }
 
-auto DiGraph::calculatePositions(const std::map<Id, ImVec2>& nodeSizes) const -> std::optional<std::map<Id, ImVec2>>
+auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes)  -> std::optional<std::map<Id, ImVec2>>
 {
     auto depths = calcNodeDepths();
-    if (!depths.has_value()) {
+    if (!depths.has_value())
+    {
         return std::nullopt;
     }
 
     size_t maxDepth = 0;
-    for (const auto& [id, depth] : *depths) {
+    for (const auto &[id, depth] : *depths)
+    {
         maxDepth = std::max(maxDepth, depth);
     }
 
     std::map<size_t, std::vector<Id>> results;
-    for (const auto& [id, depth] : *depths) {
+    for (const auto &[id, depth] : *depths)
+    {
         results[depth].push_back(id);
     }
 
@@ -310,12 +305,13 @@ auto DiGraph::calculatePositions(const std::map<Id, ImVec2>& nodeSizes) const ->
     float columnGap = 100.0f;
     float nodeGap = 40.0f;
 
-    for(auto const& [depth, elements] : results) {
+    for (auto const &[depth, elements] : results)
+    {
         float maxColumnWidth = 0.0f;
         float totalColumnHeight = 0.0f;
 
-
-        for(auto const& el : elements) {
+        for (auto const &el : elements)
+        {
             auto size = nodeSizes.at(el);
             maxColumnWidth = std::max(maxColumnWidth, size.x);
             totalColumnHeight += size.y;
@@ -323,13 +319,14 @@ auto DiGraph::calculatePositions(const std::map<Id, ImVec2>& nodeSizes) const ->
         totalColumnHeight += nodeGap * (elements.size() - 1);
 
         float currentY = -(totalColumnHeight / 2.0f);
-        for(auto const& el : elements) {
+        for (auto const &el : elements)
+        {
             auto size = nodeSizes.at(el);
             newPositions[el] = ImVec2{currentX, currentY};
             currentY += size.y + nodeGap;
         }
         currentX += maxColumnWidth + columnGap;
-    }   
+    }
 
     return newPositions;
 }
