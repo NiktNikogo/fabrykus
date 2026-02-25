@@ -44,40 +44,16 @@ auto IngredientNode::update() -> void
 {
 }
 
-auto IngredientNode::syncPins() -> void
-{
-    std::vector<uintptr_t> inUids, outUids;
-    for(auto& p: this->getIns()) inUids.push_back(p->getUid());
-    for(auto& p: this->getOuts()) outUids.push_back(p->getUid());
-    for(auto id : inUids) this->dropIN(id);
-    for(auto id : outUids) this->dropOUT(id);
-    inPins.clear();
-    outPins.clear();
 
-    for (size_t i = 0; i < outs.size(); i++)
-    {
-        auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() {
-            return Ingredient{ this->outs[i].amount / time, this->outs[i].name };
-        });
-        
-        p->renderer([this, i](ImFlow::Pin *p) {
-            if (i < outs.size()) {
-                ImGui::Text("%s", this->outs[i].name.c_str());
-                p->drawSocket();
-                p->drawDecoration();
-            } 
-        });
-        outPins.push_back(p);
-    }
-}
 
-auto IngredientNode::drawInspector() -> void 
+auto IngredientNode::drawInspector() -> bool 
 {   
     if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
                                { this->dropOUT(uid); }))
     {
-        return;
+        return true;
     }
+    return false;
 }
 
 auto IngredientNode::deserialize(nlohmann::json data) -> void

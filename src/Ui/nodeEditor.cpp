@@ -53,6 +53,15 @@ auto NodeEditor::draw() -> void
 
             digraph.printByDepth();
         }
+        if (ImGui::IsKeyPressed(ImGuiKey_4))
+        {
+            auto links = grid.getLinks();
+            for(auto link : links) {
+                auto locked = link.lock();
+                std::cout << locked->right()<< " " << locked->left()<< '\n';
+            }
+        }
+
 
         if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) && !ImGuiFileDialog::Instance()->IsOpened())
         {

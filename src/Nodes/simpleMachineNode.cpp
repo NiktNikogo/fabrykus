@@ -61,16 +61,18 @@ auto SimpleMachineNode::draw() -> void
     update();
 }
 
-auto SimpleMachineNode::drawInspector() -> void
+auto SimpleMachineNode::drawInspector() -> bool
 {
     if (formatInputIngredients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid) { this->dropIN(uid); }))
     {
-        return;
+        return true;
     }
     if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid) { this->dropOUT(uid); }))
     {
-        return;
+        return true;
     }
+
+    return false;
 }
 
 auto SimpleMachineNode::update() -> void
@@ -143,7 +145,6 @@ auto SimpleMachineNode::syncPins() -> void
                 double demand = this->ins[i].amount/this->time * this->calcOptimalCount();
                 ImGui::Text("%s", this->ins[i].name.c_str());
                 ImGui::TextDisabled("%.2f / %.2f units/s ", recived.amount, demand);
-                
 
                 ImGui::SameLine();
                 p->drawSocket();
@@ -260,7 +261,6 @@ auto SimpleMachineNode::formatInputIngredients(const char *category, const char 
     if (ImGui::Button(std::format("+##Add{}", prefix).c_str()))
     {
         list.push_back({0, "New"});
-        this->syncPins();
         return true;
     }
 
@@ -291,7 +291,6 @@ auto SimpleMachineNode::formatInputIngredients(const char *category, const char 
         {
             dropFunc(pins[i]->getUid());
             list.erase(list.begin() + i);
-            this->syncPins();
             ImGui::PopStyleColor();
             ImGui::PopID();
             return true;

@@ -126,7 +126,7 @@ int main(int, char **)
         }
 
         inspector->update();
-        inspector->draw();
+        inspector->draw(editor->getGrid());
         ImGui::Render();
 
         int display_w, display_h;

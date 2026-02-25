@@ -12,9 +12,9 @@ auto NodeInspector::setNode(std::shared_ptr<SimpleMachineNode> node) -> void
     isShowing = true;
 }
 
-const auto NodeInspector::draw() -> void const
+const auto NodeInspector::draw(ImFlow::ImNodeFlow &grid) -> void const
 {
-    if(isHiddenByKeys) 
+    if (isHiddenByKeys)
         return;
     if (!isShowing)
         return;
@@ -38,7 +38,20 @@ const auto NodeInspector::draw() -> void const
             ImGui::Separator();
             ImGui::Spacing();
 
-            node->drawInspector();
+            auto changed = node->drawInspector();
+
+            if (changed)
+            {
+                auto edges = getOldEdges(node, grid);
+                node->syncPins();
+                for(auto [left, right, leftNode, rightNode] : edges) {
+                    auto leftPin = leftNode->getOutListElement(left);
+                    auto rightPin = rightNode->getInListElement(right);
+                    if(leftPin && rightPin) {
+                        leftPin->createLink(rightPin);
+                    }
+                }
+            }
         }
         else
         {
@@ -79,4 +92,30 @@ auto NodeInspector::setHiddenByKeys(bool isHidden) -> void
 const auto NodeInspector::getHiddenByKeys() -> bool const
 {
     return this->isHiddenByKeys;
+}
+
+auto NodeInspector::getOldEdges(std::shared_ptr<SimpleMachineNode> node, ImFlow::ImNodeFlow &grid) -> std::vector<SavedLink>
+{
+    std::cout << node->getId() << node->getUID() << '\n';
+    std::vector<SavedLink> edges{};
+    for (auto link : grid.getLinks())
+    {
+        if (link.expired())
+            continue;
+        auto locked = link.lock();
+        auto left = locked->left();
+        auto right = locked->right();
+        if (left->getParent()->getUID() == node->getUID() || right->getParent()->getUID() == node->getUID())
+        {
+            std::cout << left << " " << right << '\n';
+            SavedLink savedLink{
+                left->getUid(),
+                right->getUid(),
+                dynamic_cast<SimpleMachineNode*>(left->getParent()),
+                 dynamic_cast<SimpleMachineNode*>(right->getParent()),
+            };
+            edges.push_back({savedLink});
+        }
+    }
+    return edges;
 }
