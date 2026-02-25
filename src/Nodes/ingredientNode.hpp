@@ -10,6 +10,7 @@ public:
     IngredientNode(size_t id);
     IngredientNode(size_t id, double time, std::vector<Ingredient> outs);
     auto draw() -> void override;
+    auto syncPins() -> void;
     auto update() -> void;
     auto drawInspector() -> bool override;
     auto deserialize(nlohmann::json data) -> void override;

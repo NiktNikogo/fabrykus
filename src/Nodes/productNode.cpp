@@ -50,6 +50,49 @@ auto ProductNode::update() -> void
 {
 }
 
+auto ProductNode::syncPins() -> void
+{
+    std::vector<uintptr_t> inUids, outUids;
+    for (auto &p : this->getIns())
+        inUids.push_back(p->getUid());
+    for (auto &p : this->getOuts())
+        outUids.push_back(p->getUid());
+    for (auto id : inUids)
+        this->dropIN(id);
+    for (auto id : outUids)
+        this->dropOUT(id);
+    inPins.clear();
+    outPins.clear();
+
+    auto LabelMatchFilter = [this](ImFlow::Pin *out, ImFlow::Pin *in) -> bool
+    {
+        auto *outNode = dynamic_cast<SimpleMachineNode *>(out->getParent());
+        auto *inNode = dynamic_cast<SimpleMachineNode *>(in->getParent());
+        if (!outNode || !inNode)
+            return false;
+
+        if (out->getUid() >= outNode->getOutList().size() || in->getUid() >= inNode->getInList().size())
+            return false;
+
+        return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
+    };
+
+    for (size_t i = 0; i < ins.size(); i++)
+    {
+        auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
+                                                                                                    {
+            if (i < ins.size()) {
+                ImGui::Text("%s", this->ins[i].name.c_str());
+                ImGui::Text("%d", p->getUid());
+                ImGui::Text("UID: 0x%lX", p);
+                ImGui::SameLine();
+                p->drawSocket();
+                p->drawDecoration();
+            } });
+        inPins.push_back(p);
+    }
+}
+
 auto ProductNode::drawInspector() -> bool
 {
     if (formatInputIngredients("Input:", "in", ins, this->getIns(), [this](uintptr_t uid)

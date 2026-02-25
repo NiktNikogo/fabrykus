@@ -11,6 +11,7 @@ public:
     ProductNode(size_t id, std::vector<Ingredient> ins);
     auto draw() -> void override;
     auto update() -> void;
+    auto syncPins() -> void override;
     auto drawInspector() -> bool override;
     auto deserialize(nlohmann::json data) -> void override;
 };
