@@ -5,7 +5,6 @@
 #include <GLFW/glfw3.h>
 #include <ImGuiFileDialog.h>
 
-
 #ifdef __EMSCRIPTEN__
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
 #endif
@@ -71,8 +70,6 @@ int main(int, char **)
     size_t size = 500;
     auto editor = std::make_unique<NodeEditor>(size);
     auto inspector = std::make_unique<NodeInspector>();
-   
-
 
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr;
@@ -86,7 +83,7 @@ int main(int, char **)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-    
+
         if (ImGui::IsKeyPressed(ImGuiKey_P))
         {
             editor->printGraph();
@@ -94,39 +91,78 @@ int main(int, char **)
 
         MenuBuilder(1.3f)
             .beginMenu("File")
-                .addItem("Save", "Ctrl+S", [&editor]() {
+            .addItem("Save", "Ctrl+S", [&editor]()
+                     {
                     IGFD::FileDialogConfig config;
                     config.path = ".";
                     ImGuiFileDialog::Instance()->OpenDialog("SaveProjectKey", 
-                        "Save project", ".json", config);
-                })
-                .addItem("Open", "Ctrl+O", [&editor]() {
+                        "Save project", ".json", config); })
+            .addItem("Open", "Ctrl+O", [&editor]()
+                     {
                     IGFD::FileDialogConfig config;
                     config.path = ".";
                     ImGuiFileDialog::Instance()->OpenDialog("OpenProjectKey", 
-                        "Open project", ".json", config);
-                })
-                .addItem("Exit", "", {})
+                        "Open project", ".json", config); })
+            .addItem("Exit", "", {})
             .endMenu()
             .beginMenu("Windows")
-                .addItem("Node Insepctor", "Ctrl+I", [&inspector](){
-                     inspector->setHiddenByKeys(!inspector->getHiddenByKeys());
-                })
+            .addItem("Node Insepctor", "Ctrl+I", [&inspector]()
+                     { inspector->setHiddenByKeys(!inspector->getHiddenByKeys()); })
             .endMenu();
-    
-       
-                                 
+
+        float screenW = ImGui::GetIO().DisplaySize.x;
+        float screenH = ImGui::GetIO().DisplaySize.y;
+        float inspectorWidth = inspector->inspectorWidth;
+        float menuHeight = inspector->menuHeight;
+
+        ImVec2 mousePos = ImGui::GetMousePos();
+        bool mouseOverInspector = (mousePos.x >= screenW - inspectorWidth && mousePos.y >= menuHeight);
+        bool inspectorActive = inspector->getShow() && !inspector->getHiddenByKeys();
+
+        bool backupButtons[5];
+        bool backupKeys[155];
+        bool isTyping = ImGui::GetIO().WantTextInput;
+        if (inspectorActive && mouseOverInspector)
+        {
+            for (int n = 0; n < 5; n++)
+            {
+                backupButtons[n] = io.MouseDown[n];
+                io.MouseDown[n] = false;
+            }
+            if(isTyping) {
+                for(int n = 0; n < 155; n++) {
+                    backupKeys[n] = io.KeysData[n].Down;
+                    io.KeysData[n].Down = false;
+                }
+            }
+        }
+
+
         editor->update(ImGui::GetIO().DisplaySize);
         editor->draw();
+
+        if (inspectorActive && mouseOverInspector)
+        {
+            for (int n = 0; n < 5; n++)
+            {
+                ImGui::GetIO().MouseDown[n] = backupButtons[n];
+            }
+            if(isTyping) {
+                for(int n = 0; n < 155; n++) {
+                    io.KeysData[n].Down = backupKeys[n];
+                }
+            }
+        }
+        
+        inspector->update();
+        inspector->draw(editor->getGrid());
+
 
         auto currentNode = editor->getSelectedNode();
         if (currentNode != nullptr)
         {
             inspector->setNode(editor->getSelectedNode());
         }
-
-        inspector->update();
-        inspector->draw(editor->getGrid());
         ImGui::Render();
 
         int display_w, display_h;
