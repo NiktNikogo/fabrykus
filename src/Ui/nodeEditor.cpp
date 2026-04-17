@@ -27,12 +27,15 @@ auto NodeEditor::draw() -> void
             for (const auto &link : grid.getLinks())
             {
                 auto locked = link.lock();
-                auto left = locked->left()->getParent()->getUID();
+                auto leftPin = locked->left();
+                auto leftNode = leftPin->getParent();
+                auto left = leftNode->getUID();
+                auto pinY = locked->left()->getPos().y - leftNode->getPos().y;
                 auto right = locked->right()->getParent()->getUID();
                 std::cout << std::format("Left: 0x{:X} Right: 0x{:X}", left, right) << '\n';
                 if (!digraph.hasEdge(left, right))
                 {
-                    digraph.addEdge(left, right);
+                    digraph.addEdge(left, right, pinY);
                 }
             }
         }
@@ -178,11 +181,14 @@ auto NodeEditor::arrangeNodes() -> void
     for (const auto &link : grid.getLinks())
     {
         auto locked = link.lock();
-        auto left = locked->left()->getParent()->getUID();
+        auto leftPin = locked->left();
+        auto leftNode = leftPin->getParent();
+        auto left = leftNode->getUID();
+        auto pinY = locked->left()->getPos().y - leftNode->getPos().y;
         auto right = locked->right()->getParent()->getUID();
         if (!digraph.hasEdge(left, right))
         {
-            digraph.addEdge(left, right);
+            digraph.addEdge(left, right, pinY);
         }
     }
 

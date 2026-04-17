@@ -16,20 +16,24 @@ class DiGraph
 public:
     using Id = ImFlow::NodeUID;
 private:
-    typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, Id> BoostGraph;
+    typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, Id, float> BoostGraph;
     typedef boost::graph_traits<BoostGraph>::vertex_descriptor Vertex;
 
     BoostGraph graph;
     std::unordered_map<Id, BoostGraph::vertex_descriptor> idToVertex;
+    std::unordered_map<BoostGraph::vertex_descriptor, Id> vertexToId;
 
 public:
     DiGraph() = default;
  
-    auto addEdge(const Id &parent, const Id &child) -> void;
+    auto addEdge(const Id &parent, const Id &child, float weight) -> void;
     auto addNode(const Id &id) -> void;
     
     auto getChildren(const Id& id) const -> std::vector<Id>;
     auto getNodes() -> std::vector<Id>;
+
+    auto getParents(const Id& id) const -> std::vector<Id>;
+    auto getParentsWithWeights(const Id& id) const -> std::vector<std::pair<Id, float>>;
 
     auto removeNode(const Id &id) -> void;
     auto removeEdge(const Id &parent, const Id &child) -> void;

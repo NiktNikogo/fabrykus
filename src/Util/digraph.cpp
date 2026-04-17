@@ -3,11 +3,11 @@
 #include <unordered_map>
 #include <queue>
 
-auto DiGraph::addEdge(const Id &parent, const Id &child) -> void
+auto DiGraph::addEdge(const Id &parent, const Id &child, float weight) -> void
 {
     if (hasNode(parent) && hasNode(child))
     {
-        boost::add_edge(idToVertex[parent], idToVertex[child], graph);
+        boost::add_edge(idToVertex[parent], idToVertex[child], weight, graph);
     }
 }
 
@@ -17,6 +17,7 @@ auto DiGraph::addNode(const Id &id) -> void
     {
         auto v = boost::add_vertex(id, graph);
         idToVertex[id] = v;
+        vertexToId[v] = id;
     }
 }
 
@@ -41,10 +42,55 @@ auto DiGraph::getChildren(const Id &id) const -> std::vector<Id>
 auto DiGraph::getNodes() -> std::vector<Id>
 {
     std::vector<Id> ids;
-    for(auto const& [id, vertex] : idToVertex) {
+    for (auto const &[id, vertex] : idToVertex)
+    {
         ids.push_back(id);
     }
     return ids;
+}
+
+auto DiGraph::getParents(const Id &id) const -> std::vector<Id>
+{
+    std::vector<Id> parents;
+    auto v = idToVertex.find(id);
+    if (v == idToVertex.end())
+        return parents;
+
+    auto [begin, end] = boost::in_edges(v->second, graph);
+    for (auto it = begin; it != end; it++)
+    {
+        auto parent = boost::source(*it, graph);
+        auto parentIt = vertexToId.find(parent);
+        if (parentIt != vertexToId.end())
+        {
+            parents.push_back(parentIt->second);
+        }
+
+
+    }
+    return parents;
+}
+
+auto DiGraph::getParentsWithWeights(const Id &id) const -> std::vector<std::pair<Id, float>>
+{
+    std::vector<std::pair<Id, float>> parents;
+    auto v = idToVertex.find(id);
+    if (v == idToVertex.end())
+        return parents;
+
+    auto [begin, end] = boost::in_edges(v->second, graph);
+    for (auto it = begin; it != end; it++)
+    {
+        auto parent = boost::source(*it, graph);
+        auto parentIt = vertexToId.find(parent);
+        if (parentIt != vertexToId.end())
+        {
+            parents.push_back({parentIt->second, graph[*it]});
+        }
+
+
+    }
+    return parents;
 }
 
 auto DiGraph::removeNode(const Id &id) -> void
@@ -59,10 +105,10 @@ auto DiGraph::removeNode(const Id &id) -> void
 
 auto DiGraph::removeEdge(const Id &parent, const Id &child) -> void
 {
-    if (!hasNode(parent) || !hasNode(child)) return;
+    if (!hasNode(parent) || !hasNode(child))
+        return;
     auto u = idToVertex.at(parent);
     auto v = idToVertex.at(child);
-
 
     auto edge = boost::edge(u, v, graph);
     if (!edge.second)
@@ -81,7 +127,7 @@ auto DiGraph::hasEdge(const Id &parent, const Id &child) const -> bool
         return false;
     auto u = idToVertex.at(parent);
     auto v = idToVertex.at(child);
-    
+
     return boost::edge(u, v, graph).second;
 }
 
@@ -120,31 +166,35 @@ auto DiGraph::printGraph() -> void
 auto DiGraph::clearEdges() -> void
 {
     auto [it, end] = boost::vertices(graph);
-    for(; it != end; ++it) {
+    for (; it != end; ++it)
+    {
         boost::clear_vertex(*it, graph);
     }
 }
 
 auto DiGraph::topologicalSort() const -> std::optional<std::vector<Id>>
 {
-    if(idToVertex.size() < 1) {
+    if (idToVertex.size() < 1)
+    {
         return std::vector<Id>{};
-    } 
-
+    }
 
     std::vector<Vertex> vertices;
-    
-    //czemu exception...
-    try {
+
+    // czemu exception...
+    try
+    {
         boost::topological_sort(graph, std::back_inserter(vertices));
     }
-    catch(const boost::not_a_dag& e) {
+    catch (const boost::not_a_dag &e)
+    {
         return std::nullopt;
     }
 
     std::vector<Id> rev;
     rev.reserve(vertices.size());
-    for(auto it = vertices.rbegin(); it != vertices.rend(); ++it) {
+    for (auto it = vertices.rbegin(); it != vertices.rend(); ++it)
+    {
         rev.push_back(graph[*it]);
     }
 
@@ -280,7 +330,7 @@ auto DiGraph::printByDepth() -> void
     }
 }
 
-auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes)  -> std::optional<std::map<Id, ImVec2>>
+auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes) -> std::optional<std::map<Id, ImVec2>>
 {
     auto depths = calcNodeDepths();
     if (!depths.has_value())
@@ -297,6 +347,15 @@ auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes)  -> std:
     std::map<size_t, std::vector<Id>> results;
     for (const auto &[id, depth] : *depths)
     {
+        std::cout << std::format("{} {:#X} {}", id, id, depth) << '\n';
+        auto parents = getParents(id);
+        if (parents.size() > 0)
+        {
+            for (const auto &parent : parents)
+            {
+                std::cout << std::format("Parent: {}", parent) << '\n';
+            }
+        }
         results[depth].push_back(id);
     }
 
@@ -305,8 +364,26 @@ auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes)  -> std:
     float columnGap = 100.0f;
     float nodeGap = 40.0f;
 
-    for (auto const &[depth, elements] : results)
+    for (auto &[depth, elements] : results)
     {
+        if (depth > 0)
+        {
+            std::sort(elements.begin(), elements.end(), [&](Id a, Id b) {
+                auto getAvgY = [&](Id id){
+                    auto parents = getParentsWithWeights(id);
+                    
+                    if(parents.empty()) return 0.0f;
+
+                    float sumY = 0.0f;
+                    for(const auto& [parentId, weight] : parents){
+                        std::cout << std::format("{}, {}", parentId, weight) << '\n';
+                        sumY += newPositions[parentId].y = weight;
+                    }
+                    return sumY / parents.size();
+                };        
+            return getAvgY(a) < getAvgY(b); });
+        }
+        
         float maxColumnWidth = 0.0f;
         float totalColumnHeight = 0.0f;
 
