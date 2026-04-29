@@ -7,6 +7,7 @@
 #include "Nodes/productNode.hpp"
 #include "Nodes/simpleMachineNode.hpp"
 #include "Nodes/splitterNode.hpp"
+#include "Nodes/mergerNode.hpp"
 #include "Util/nodeTypes.hpp"
 #include "digraph.hpp"
 
@@ -27,6 +28,10 @@ namespace NodeFactory
             break;
         case NodeType::SPLITTER:
             digraph.addNode(grid.placeNode<SplitterNode>(id)->getUID());
+            break;
+        case NodeType::MERGER:
+            digraph.addNode(grid.placeNode<MergerNode>(id)->getUID());
+            break;
         default:
             return;
         }
@@ -64,6 +69,13 @@ namespace NodeFactory
             digraph.addNode(node->getUID());
         }
         break;
+        case NodeType::MERGER:
+        {
+            auto node = grid.placeNode<MergerNode>();
+            node->deserialize(data);
+            digraph.addNode(node->getUID());
+        }
+        break;
         default:
             return;
         }
@@ -76,22 +88,31 @@ namespace NodeFactory
     };
 
     inline const std::vector<typeNameItem> typeNameList = {
-        {NodeType::MACHINE, "Machine",},
+        {
+            NodeType::MACHINE,
+            "Machine",
+        },
         {NodeType::PRODUCT, "Storage"},
         {NodeType::INGREDIENT, "Source"},
-        {NodeType::SPLITTER, "Splitter"}
-    };
+        {NodeType::SPLITTER, "Splitter"},
+        {NodeType::MERGER, "Merger"}};
 
     inline const std::map<NodeType, std::string> typeNameMap = {
-        {NodeType::MACHINE, "Machine",},
+        {
+            NodeType::MACHINE,
+            "Machine",
+        },
         {NodeType::PRODUCT, "Storage"},
         {NodeType::INGREDIENT, "Source"},
-        {NodeType::SPLITTER, "Splitter"}
+        {NodeType::SPLITTER, "Splitter"},
+        {NodeType::MERGER, "Merger"}
 
     };
 
-    inline auto getNameFromType(NodeType type) -> std::string {
-        if(typeNameMap.contains(type)) {
+    inline auto getNameFromType(NodeType type) -> std::string
+    {
+        if (typeNameMap.contains(type))
+        {
             return typeNameMap.find(type)->second;
         }
         return "";

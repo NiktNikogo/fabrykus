@@ -6,12 +6,14 @@ enum NodeType {
   MACHINE,
   PRODUCT,
   INGREDIENT,
-  SPLITTER
+  SPLITTER,
+  MERGER
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM( NodeType, {
     {NodeType::MACHINE, "machine"},
     {NodeType::PRODUCT, "product"},
     {NodeType::INGREDIENT, "ingredient"},
-    {NodeType::SPLITTER, "splitter"}
+    {NodeType::SPLITTER, "splitter"},
+    {NodeType::MERGER, "merger"},
 })

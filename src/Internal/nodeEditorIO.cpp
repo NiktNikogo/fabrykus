@@ -65,6 +65,7 @@ auto NodeEditorIO::parseNodes(ImFlow::ImNodeFlow &grid, nlohmann::json nodes, Di
         case NodeType::INGREDIENT:
         case NodeType::PRODUCT:
         case NodeType::SPLITTER:
+        case NodeType::MERGER:
             NodeFactory::createNode(type, data, grid, digraph);
         break;
         default:
