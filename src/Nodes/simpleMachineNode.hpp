@@ -24,7 +24,8 @@ public:
     NodeType type = NodeType::MACHINE;
 protected:
     auto formatInputIngredients(const char *category, const char *prefix, std::vector<Ingredient> &list,
-                                const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool;
+                                const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc,
+                                bool canAdd = true) -> bool;
     auto calcEfficiency() -> double;
     auto calcOptimalCount() -> double;
 

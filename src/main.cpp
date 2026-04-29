@@ -118,6 +118,7 @@ int main(int, char **)
         ImVec2 mousePos = ImGui::GetMousePos();
         bool mouseOverInspector = (mousePos.x >= screenW - inspectorWidth && mousePos.y >= menuHeight);
         bool inspectorActive = inspector->getShow() && !inspector->getHiddenByKeys();
+        bool isFileDialogActive = ImGuiFileDialog::Instance()->IsOpened();
 
         bool backupButtons[5];
         bool backupKeys[155];

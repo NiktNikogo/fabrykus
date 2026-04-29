@@ -249,7 +249,8 @@ const auto SimpleMachineNode::getOutPinIndex(ImFlow::Pin *pin) const -> size_t
 
 auto SimpleMachineNode::formatInputIngredients(const char *category, const char *prefix,
                                                std::vector<Ingredient> &list,
-                                               const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc) -> bool
+                                               const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc,
+                                               bool canAdd) -> bool
 {
 
     auto totalWidth = ImGui::GetContentRegionAvail().x;
@@ -258,10 +259,12 @@ auto SimpleMachineNode::formatInputIngredients(const char *category, const char 
 
     ImGui::Text("%s", category);
     ImGui::SameLine();
-    if (ImGui::Button(std::format("+##Add{}", prefix).c_str()))
-    {
-        list.push_back({0, "New"});
-        return true;
+    if (canAdd) {
+        if (ImGui::Button(std::format("+##Add{}", prefix).c_str()))
+        {
+            list.push_back({0, "New"});
+            return true;
+        }
     }
 
     for (auto i = 0; i < list.size(); i++)

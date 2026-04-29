@@ -96,7 +96,6 @@ const auto NodeInspector::getHiddenByKeys() -> bool const
 
 auto NodeInspector::getOldEdges(std::shared_ptr<SimpleMachineNode> node, ImFlow::ImNodeFlow &grid) -> std::vector<SavedLink>
 {
-    std::cout << node->getId() << node->getUID() << '\n';
     std::vector<SavedLink> edges{};
     for (auto link : grid.getLinks())
     {
@@ -107,7 +106,6 @@ auto NodeInspector::getOldEdges(std::shared_ptr<SimpleMachineNode> node, ImFlow:
         auto right = locked->right();
         if (left->getParent()->getUID() == node->getUID() || right->getParent()->getUID() == node->getUID())
         {
-            std::cout << left << " " << right << '\n';
             SavedLink savedLink{
                 left->getUid(),
                 right->getUid(),

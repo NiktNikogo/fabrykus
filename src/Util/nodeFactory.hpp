@@ -6,6 +6,7 @@
 #include "Nodes/ingredientNode.hpp"
 #include "Nodes/productNode.hpp"
 #include "Nodes/simpleMachineNode.hpp"
+#include "Nodes/splitterNode.hpp"
 #include "Util/nodeTypes.hpp"
 #include "digraph.hpp"
 
@@ -24,6 +25,8 @@ namespace NodeFactory
         case NodeType::PRODUCT:
             digraph.addNode(grid.placeNode<ProductNode>(id)->getUID());
             break;
+        case NodeType::SPLITTER:
+            digraph.addNode(grid.placeNode<SplitterNode>(id)->getUID());
         default:
             return;
         }
@@ -53,6 +56,14 @@ namespace NodeFactory
             node->deserialize(data);
             digraph.addNode(node->getUID());
         }
+        break;
+        case NodeType::SPLITTER:
+        {
+            auto node = grid.placeNode<SplitterNode>();
+            node->deserialize(data);
+            digraph.addNode(node->getUID());
+        }
+        break;
         default:
             return;
         }
@@ -68,12 +79,15 @@ namespace NodeFactory
         {NodeType::MACHINE, "Machine",},
         {NodeType::PRODUCT, "Storage"},
         {NodeType::INGREDIENT, "Source"},
+        {NodeType::SPLITTER, "Splitter"}
     };
 
     inline const std::map<NodeType, std::string> typeNameMap = {
         {NodeType::MACHINE, "Machine",},
         {NodeType::PRODUCT, "Storage"},
         {NodeType::INGREDIENT, "Source"},
+        {NodeType::SPLITTER, "Splitter"}
+
     };
 
     inline auto getNameFromType(NodeType type) -> std::string {
