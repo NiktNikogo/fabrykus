@@ -83,8 +83,6 @@ auto ProductNode::syncPins() -> void
                                                                                                     {
             if (i < ins.size()) {
                 ImGui::Text("%s", this->ins[i].name.c_str());
-                ImGui::Text("%d", p->getUid());
-                ImGui::Text("UID: 0x%lX", p);
                 ImGui::SameLine();
                 p->drawSocket();
                 p->drawDecoration();
