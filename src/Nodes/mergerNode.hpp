@@ -14,8 +14,6 @@ private:
         6.5f 
     ); 
 }
-	std::vector<double> inMerger;
-	double outAmount = 0.0f;
 
 public:
 	MergerNode();

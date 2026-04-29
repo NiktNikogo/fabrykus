@@ -7,7 +7,6 @@
 MergerNode::MergerNode() : SimpleMachineNode()
 {
 	type = NodeType::MERGER;
-	inMerger.clear();
 }
 
 MergerNode::MergerNode(size_t id) : SimpleMachineNode(id)
@@ -15,7 +14,6 @@ MergerNode::MergerNode(size_t id) : SimpleMachineNode(id)
 	type = NodeType::MERGER;
 	ins.clear();
 	outs.clear();
-	inMerger.clear();
 	ins.push_back({1, "Iron ingot"});
 	ins.push_back({1, "Iron ingot"});
 	outs.push_back({1, "Iron ingot"});
@@ -72,7 +70,6 @@ auto MergerNode::syncPins() -> void
 
 		return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
 	};
-	inMerger.clear();
 	for (size_t i = 0; i < ins.size(); i++)
 	{
 		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
@@ -89,17 +86,15 @@ auto MergerNode::syncPins() -> void
 	}
 	for (size_t i = 0; i < outs.size(); i++)
 	{
-		
-		auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() { 
+
+		auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]()
+																 { 
 			double total = 0.0f;
 			for(size_t j = 0; j < ins.size(); j++) {
 				auto  ing = getInVal<Ingredient>(j);
-				std::cout << j << " " <<  ing.name << " " << ing.amount << '\n';
 				total += getInVal<Ingredient>(j).amount;
 			}
-			std::cout << total << '\n';
-			return Ingredient{total, this->outs[i].name}; 
-		});
+			return Ingredient{total, this->outs[i].name}; });
 
 		p->renderer([this, i](ImFlow::Pin *p)
 					{
@@ -110,7 +105,6 @@ auto MergerNode::syncPins() -> void
             } });
 		outPins.push_back(p);
 	}
-	inMerger.clear();
 }
 
 auto MergerNode::drawInspector() -> bool
