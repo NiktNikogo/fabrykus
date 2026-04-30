@@ -49,6 +49,19 @@ auto DiGraph::getNodes() -> std::vector<Id>
     return ids;
 }
 
+auto DiGraph::getEdges() -> std::vector<Edge>
+{
+    std::vector<Edge> edges;
+    for (auto e : boost::make_iterator_range(boost::edges(graph)))
+    {
+        auto u = boost::source(e, graph);
+        auto v = boost::target(e, graph);
+        //std::cout << vertexToId.at(u) << " " << vertexToId.at(v) << '\n';
+        edges.push_back({u, v});
+    }
+    return edges;
+}
+
 auto DiGraph::getParents(const Id &id) const -> std::vector<Id>
 {
     std::vector<Id> parents;
@@ -65,8 +78,6 @@ auto DiGraph::getParents(const Id &id) const -> std::vector<Id>
         {
             parents.push_back(parentIt->second);
         }
-
-
     }
     return parents;
 }
@@ -87,8 +98,6 @@ auto DiGraph::getParentsWithWeights(const Id &id) const -> std::vector<std::pair
         {
             parents.push_back({parentIt->second, graph[*it]});
         }
-
-
     }
     return parents;
 }
@@ -101,6 +110,7 @@ auto DiGraph::removeNode(const Id &id) -> void
     boost::clear_vertex(it->second, graph);
     boost::remove_vertex(it->second, graph);
     idToVertex.erase(it);
+    vertexToId.erase(it->second);
 }
 
 auto DiGraph::removeEdge(const Id &parent, const Id &child) -> void
@@ -195,7 +205,9 @@ auto DiGraph::topologicalSort() const -> std::optional<std::vector<Id>>
     rev.reserve(vertices.size());
     for (auto it = vertices.rbegin(); it != vertices.rend(); ++it)
     {
-        rev.push_back(graph[*it]);
+        if(vertexToId.contains(*it)) {
+            rev.push_back(vertexToId.at(*it));
+        }
     }
 
     return rev;
@@ -240,13 +252,9 @@ auto DiGraph::calcNodeDepths() -> std::optional<std::unordered_map<Id, size_t>>
 
     for (const auto &nodeId : *topoOrder)
     {
-        auto children = getChildren(nodeId);
-        if (children.size() < 1)
-            continue;
-
-        for (const auto &child : children)
-        {
-            depths[child] = std::max(depths[child], depths[nodeId] + 1);
+        auto parents = getParents(nodeId);
+        for (const auto &parent : parents) {
+            depths[nodeId] = std::max(depths[nodeId], depths[parent] + 1);
         }
     }
 
@@ -368,7 +376,8 @@ auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes) -> std::
     {
         if (depth > 0)
         {
-            std::sort(elements.begin(), elements.end(), [&](Id a, Id b) {
+            std::sort(elements.begin(), elements.end(), [&](Id a, Id b)
+                      {
                 auto getAvgY = [&](Id id){
                     auto parents = getParentsWithWeights(id);
                     
@@ -377,13 +386,13 @@ auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes) -> std::
                     float sumY = 0.0f;
                     for(const auto& [parentId, weight] : parents){
                         std::cout << std::format("{}, {}", parentId, weight) << '\n';
-                        sumY += newPositions[parentId].y = weight;
+                        sumY += newPositions[parentId].y + weight;
                     }
                     return sumY / parents.size();
                 };        
             return getAvgY(a) < getAvgY(b); });
         }
-        
+
         float maxColumnWidth = 0.0f;
         float totalColumnHeight = 0.0f;
 

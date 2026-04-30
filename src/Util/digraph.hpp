@@ -15,8 +15,9 @@ class DiGraph
 {
 public:
     using Id = ImFlow::NodeUID;
+    using Edge = std::pair<Id, Id>;
 private:
-    typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, Id, float> BoostGraph;
+    typedef boost::adjacency_list<boost::listS, boost::vecS, boost::bidirectionalS, Id, float> BoostGraph;
     typedef boost::graph_traits<BoostGraph>::vertex_descriptor Vertex;
 
     BoostGraph graph;
@@ -31,6 +32,7 @@ public:
     
     auto getChildren(const Id& id) const -> std::vector<Id>;
     auto getNodes() -> std::vector<Id>;
+    auto getEdges() -> std::vector<Edge>;
 
     auto getParents(const Id& id) const -> std::vector<Id>;
     auto getParentsWithWeights(const Id& id) const -> std::vector<std::pair<Id, float>>;

@@ -77,7 +77,6 @@ auto SimpleMachineNode::drawInspector() -> bool
 
 auto SimpleMachineNode::update() -> void
 {
-
     for (size_t i = 0; i < ins.size(); i++)
     {
         auto p = inPin(i);

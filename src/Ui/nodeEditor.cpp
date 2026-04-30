@@ -36,6 +36,7 @@ auto NodeEditor::draw() -> void
                 if (!digraph.hasEdge(left, right))
                 {
                     digraph.addEdge(left, right, pinY);
+                    std::cout << digraph.getEdges().size() << '\n';
                 }
             }
         }
@@ -163,6 +164,19 @@ auto NodeEditor::update(ImVec2 size) -> void
         }
         ImGuiFileDialog::Instance()->Close();
     }
+
+    typedef ImFlow::NodeUID NodeId;
+    std::set<NodeId> aliveIds;
+    for(const auto& node: grid.getNodes()) {
+        aliveIds.insert(node.second->getUID());
+    }
+    for(const auto& dataId: digraph.getNodes()) {
+        if(aliveIds.find(dataId) == aliveIds.end()) {
+           digraph.removeNode(dataId);
+        }
+    }
+
+   
 }
 
 auto NodeEditor::saveToFile(const std::string &path) -> void
