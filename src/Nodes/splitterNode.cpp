@@ -104,11 +104,13 @@ auto SplitterNode::syncPins() -> void
 
 auto SplitterNode::drawInspector() -> bool
 {
-	if (formatInputIngredients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid) { this->dropIN(uid); }, false))
+	if (formatInputIngredients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid) 
+								{ this->dropIN(uid); }, {false, false, false, true, &outs}))
     {
         return true;
     }
-    if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid) { this->dropOUT(uid); }))
+    if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid) 
+								{ this->dropOUT(uid); }, {true, true, true, true, &ins}))
     {
         return true;
     }

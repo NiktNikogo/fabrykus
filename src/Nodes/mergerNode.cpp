@@ -110,13 +110,12 @@ auto MergerNode::syncPins() -> void
 auto MergerNode::drawInspector() -> bool
 {
 	if (formatInputIngredients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid)
-							   { this->dropIN(uid); }))
+							   { this->dropIN(uid); }, {false, true, true, true, &outs}))
 	{
 		return true;
 	}
 	if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
-							   { this->dropOUT(uid); }),
-		false)
+							   { this->dropOUT(uid); }, {false, false, false, true, &ins}))
 	{
 		return true;
 	}

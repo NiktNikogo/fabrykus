@@ -37,6 +37,7 @@ add_library(app_lib STATIC
     src/Nodes/mergerNode.cpp
     src/Util/digraph.cpp
     src/Util/nodeFactory.hpp
+    src/Util/inspectorConfig.hpp
 ) 
 
 target_include_directories(app_lib PUBLIC src) 

@@ -6,6 +6,7 @@
 
 #include "Util/ingredient.hpp"
 #include "Util/nodeTypes.hpp"
+#include "Util/inspectorConfig.hpp"
 
 class SimpleMachineNode : public ImFlow::BaseNode
 {
@@ -25,7 +26,7 @@ public:
 protected:
     auto formatInputIngredients(const char *category, const char *prefix, std::vector<Ingredient> &list,
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc,
-                                bool canAdd = true) -> bool;
+                                InspectorConfig config = {true, true, true, false, nullptr}) -> bool;
     auto calcEfficiency() -> double;
     auto calcOptimalCount() -> double;
 
