@@ -63,6 +63,7 @@ auto IngredientNode::syncPins() -> void
         p->renderer([this, i](ImFlow::Pin *p) {
             if (i < outs.size()) {
                 ImGui::Text("%s", this->outs[i].name.c_str());
+                ImGui::TextDisabled("O: %.2f units/s ", outs[i].amount/time);
                 p->drawSocket();
                 p->drawDecoration();
             } 

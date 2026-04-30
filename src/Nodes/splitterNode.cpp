@@ -69,67 +69,68 @@ auto SplitterNode::syncPins() -> void
 		return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
 	};
 	for (size_t i = 0; i < ins.size(); i++)
-	
+
 	{
-		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p) {
-            if (i < ins.size()) {
+		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
+																									{
+			if (i < ins.size()) {
 				Ingredient recived = getInVal<Ingredient>(i);
 				this->inAmount = recived.amount;
 				
-                ImGui::Text("%s", this->ins[i].name.c_str());
-
-                ImGui::SameLine();
-                p->drawSocket();
-                p->drawDecoration();
-            } });
+				ImGui::Text("%s", this->ins[i].name.c_str());
+				ImGui::TextDisabled("I: %.2f", inAmount);
+				ImGui::SameLine();
+				p->drawSocket();
+				p->drawDecoration();
+			} });
 		inPins.push_back(p);
 	}
 
 	for (size_t i = 0; i < outs.size(); i++)
 	{
-		auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() { 
-			return Ingredient{this->outs[i].amount * this->inAmount, this->outs[i].name}; 
-		});
+		auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]()
+																 { return Ingredient{this->outs[i].amount * this->inAmount, this->outs[i].name}; });
 
 		p->renderer([this, i](ImFlow::Pin *p)
 					{
-            if (i < outs.size()) {
-                ImGui::Text("%s", this->outs[i].name.c_str());
-                p->drawSocket();
-                p->drawDecoration();
-            } });
+			if (i < outs.size()) {
+				ImGui::Text("%s", this->outs[i].name.c_str());
+				ImGui::TextDisabled("O: %.2f%%", this->outs[i].amount);
+				p->drawSocket();
+				p->drawDecoration();
+			} });
 		outPins.push_back(p);
 	}
 }
 
 auto SplitterNode::drawInspector() -> bool
 {
-	if (formatInputIngredients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid) 
-								{ this->dropIN(uid); }, {false, false, false, true, &outs}))
-    {
-        return true;
-    }
-    if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid) 
-								{ this->dropOUT(uid); }, {true, true, true, true, &ins}))
-    {
-        return true;
-    }
+	if (formatInputIngredients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid)
+							   { this->dropIN(uid); }, {false, false, false, true, &outs}))
+	{
+		return true;
+	}
+	if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
+							   { this->dropOUT(uid); }, {true, true, true, true, &ins}))
+	{
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 auto SplitterNode::deserialize(nlohmann::json data) -> void
 {
 	setTitle(NodeFactory::getNameFromType(type).c_str());
-    setStyle(purple());
+	setStyle(purple());
 
-    id = data["id"];
-    fuel = data["fuel"];
-    time = data["time"];
-    ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
-    setPos(pos);
-    ins = data["ins"].get<std::vector<Ingredient>>();
-    outs = data["outs"].get<std::vector<Ingredient>>();
+	id = data["id"];
+	fuel = data["fuel"];
+	time = data["time"];
+	ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
+	setPos(pos);
+	ins = data["ins"].get<std::vector<Ingredient>>();
+	outs = data["outs"].get<std::vector<Ingredient>>();
 
-    syncPins();
+	syncPins();
 }

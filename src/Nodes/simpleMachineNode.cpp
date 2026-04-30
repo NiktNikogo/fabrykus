@@ -144,7 +144,8 @@ auto SimpleMachineNode::syncPins() -> void
                 Ingredient recived = getInVal<Ingredient>(i);
                 double demand = this->ins[i].amount/this->time * this->calcOptimalCount();
                 ImGui::Text("%s", this->ins[i].name.c_str());
-                ImGui::TextDisabled("%.2f / %.2f units/s ", recived.amount, demand);
+                ImGui::TextDisabled("R: %.2f units/s ", ins[i].amount);
+                ImGui::TextDisabled("I: %.2f units/s ", recived.amount);
 
                 ImGui::SameLine();
                 p->drawSocket();
@@ -168,13 +169,17 @@ auto SimpleMachineNode::syncPins() -> void
                     result.amount = 0;
                 }
             
-                return result; });
+                return result; 
+            });
         p->renderer([this, i](ImFlow::Pin *p)
                     {
             if (i < outs.size()) {
+                float eff = this->calcEfficiency();
+                float count = this->calcOptimalCount();
                 Ingredient result = this->outs[i];
                 ImGui::Text("%s", this->outs[i].name.c_str());
-                ImGui::TextDisabled("%.2f units/s ", result.amount/this->time);
+                ImGui::TextDisabled("R: %.2f units/s ", result.amount/this->time);
+                ImGui::TextDisabled("O: %.2f units/s ", (result.amount/this->time) * eff * count);
                 p->drawSocket();
                 p->drawDecoration();
             } });

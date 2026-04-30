@@ -35,15 +35,6 @@ auto ProductNode::draw() -> void
     ImGui::Text("UID: 0x%lX", this->getUID());
     ImGui::Text("ID: %zd", this->getId());
     ImGui::PushItemWidth(100.f);
-
-    for (size_t i = 0; i < inPins.size(); i++)
-    {
-        if (inPins[i])
-        {
-            Ingredient curr = getInVal<Ingredient>(inPins[i]->getUid());
-            ImGui::Text("%s: %.2f units/sec", curr.name.c_str(), (float)curr.amount);
-        }
-    }
 }
 
 auto ProductNode::update() -> void
@@ -83,6 +74,7 @@ auto ProductNode::syncPins() -> void
                                                                                                     {
             if (i < ins.size()) {
                 ImGui::Text("%s", this->ins[i].name.c_str());
+                ImGui::TextDisabled("I: %.2f units/s ", getInVal<Ingredient>(i).amount);
                 ImGui::SameLine();
                 p->drawSocket();
                 p->drawDecoration();

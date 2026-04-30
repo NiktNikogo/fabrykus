@@ -24,4 +24,5 @@ public:
 	auto syncPins() -> void override;
 	auto drawInspector() -> bool override;
 	auto deserialize(nlohmann::json data) -> void override;
+	double totalIntake = 0.0f;
 };

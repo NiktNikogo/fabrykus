@@ -72,16 +72,18 @@ auto MergerNode::syncPins() -> void
 	};
 	for (size_t i = 0; i < ins.size(); i++)
 	{
-		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
-																									{
-            if (i < ins.size()) {
-			
-                ImGui::Text("%s", this->ins[i].name.c_str());
-
-                ImGui::SameLine();
-                p->drawSocket();
-                p->drawDecoration();
-            } });
+		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer(
+			[this, i](ImFlow::Pin *p) {
+				if (i < ins.size()) {
+					auto intake = getInVal<Ingredient>(i).amount/totalIntake;
+					ins[i].amount = intake;
+					ImGui::Text("%s", this->ins[i].name.c_str());
+					ImGui::TextDisabled("I: %.2f%%", ins[i].amount);
+					ImGui::SameLine();
+					p->drawSocket();
+					p->drawDecoration();
+				} 
+			});
 		inPins.push_back(p);
 	}
 	for (size_t i = 0; i < outs.size(); i++)
@@ -89,17 +91,18 @@ auto MergerNode::syncPins() -> void
 
 		auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]()
 																 { 
-			double total = 0.0f;
+			this->totalIntake = 0.0f;
 			for(size_t j = 0; j < ins.size(); j++) {
 				auto  ing = getInVal<Ingredient>(j);
-				total += getInVal<Ingredient>(j).amount;
+				totalIntake += getInVal<Ingredient>(j).amount;
 			}
-			return Ingredient{total, this->outs[i].name}; });
+			return Ingredient{totalIntake, this->outs[i].name}; });
 
 		p->renderer([this, i](ImFlow::Pin *p)
 					{
             if (i < outs.size()) {
                 ImGui::Text("%s", this->outs[i].name.c_str());
+				ImGui::TextDisabled("O: %.2f%%", totalIntake);
                 p->drawSocket();
                 p->drawDecoration();
             } });
