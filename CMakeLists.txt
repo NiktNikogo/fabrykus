@@ -38,6 +38,7 @@ add_library(app_lib STATIC
     src/Util/digraph.cpp
     src/Util/nodeFactory.hpp
     src/Util/inspectorConfig.hpp
+    src/Util/isolatedGraph.cpp
 ) 
 
 target_include_directories(app_lib PUBLIC src) 

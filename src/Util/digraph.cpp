@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <queue>
 
+#include "boost/graph/connected_components.hpp"
+
 auto DiGraph::addEdge(const Id &parent, const Id &child, float weight) -> void
 {
     if (hasNode(parent) && hasNode(child))
@@ -56,10 +58,41 @@ auto DiGraph::getEdges() -> std::vector<Edge>
     {
         auto u = boost::source(e, graph);
         auto v = boost::target(e, graph);
-        //std::cout << vertexToId.at(u) << " " << vertexToId.at(v) << '\n';
         edges.push_back({u, v});
     }
     return edges;
+}
+
+auto DiGraph::getComponents() -> std::vector<std::vector<Vertex>>
+{
+	std::vector<int> component(boost::num_vertices(graph));
+    int numComponents = boost::connected_components(graph, &component[0]);
+
+    std::vector<std::vector<Vertex>> groups(numComponents);
+    for(size_t i = 0; i < component.size(); i++) {
+        groups[component[i]].push_back(i);
+    }
+    
+    return groups;
+}
+
+auto DiGraph::getIsolatedGraphs(ImFlow::ImNodeFlow &grid) -> std::vector<IsolatedGraph>
+{
+	auto components = getComponents();
+    std::vector<IsolatedGraph> isoGraphs;
+    for(const auto& comp : components ) {
+        std::vector<Id> ids{};
+        for(const auto& el : comp) {
+            ids.push_back(vertexToId.at(el));
+        }
+        IsolatedGraph isoGraph(ids);
+        isoGraph.findSources(grid);
+        if(isoGraph.isProductionLine()) {
+            isoGraphs.push_back(IsolatedGraph(isoGraph));
+        }
+    }
+
+    return isoGraphs;
 }
 
 auto DiGraph::getParents(const Id &id) const -> std::vector<Id>

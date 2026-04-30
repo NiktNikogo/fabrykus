@@ -21,25 +21,6 @@ auto NodeEditor::draw() -> void
     if (ImGui::Begin("Node Editor", nullptr, editorFlags))
     {
         grid.update();
-        if (ImGui::IsKeyPressed(ImGuiKey_1))
-        {
-            digraph.clearEdges();
-            for (const auto &link : grid.getLinks())
-            {
-                auto locked = link.lock();
-                auto leftPin = locked->left();
-                auto leftNode = leftPin->getParent();
-                auto left = leftNode->getUID();
-                auto pinY = locked->left()->getPos().y - leftNode->getPos().y;
-                auto right = locked->right()->getParent()->getUID();
-                std::cout << std::format("Left: 0x{:X} Right: 0x{:X}", left, right) << '\n';
-                if (!digraph.hasEdge(left, right))
-                {
-                    digraph.addEdge(left, right, pinY);
-                    std::cout << digraph.getEdges().size() << '\n';
-                }
-            }
-        }
         if (ImGui::IsKeyPressed(ImGuiKey_2))
         {
             digraph.printTopologicalSort();
@@ -65,7 +46,19 @@ auto NodeEditor::draw() -> void
                 std::cout << locked->right()<< " " << locked->left()<< '\n';
             }
         }
-
+        if (ImGui::IsKeyPressed(ImGuiKey_5))
+        {
+            // auto components = digraph.getComponents();
+            // size_t i = 0;
+            // for(const auto& component : components) {
+            //     std::cout << i++ << ": " << '\n';
+            //     for(const auto& el : component) {
+            //         std::cout << el << '\n';
+            //     }
+            // }
+            auto iso = digraph.getIsolatedGraphs(grid);
+            std::cout << iso.size() << '\n';
+        }
 
         if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) && !ImGuiFileDialog::Instance()->IsOpened())
         {
@@ -176,6 +169,20 @@ auto NodeEditor::update(ImVec2 size) -> void
         }
     }
 
+    digraph.clearEdges();
+    for (const auto &link : grid.getLinks())
+    {
+        auto locked = link.lock();
+        auto leftPin = locked->left();
+        auto leftNode = leftPin->getParent();
+        auto left = leftNode->getUID();
+        auto pinY = locked->left()->getPos().y - leftNode->getPos().y;
+        auto right = locked->right()->getParent()->getUID();
+        if (!digraph.hasEdge(left, right))
+        {
+            digraph.addEdge(left, right, pinY);
+        }
+    }
    
 }
 
