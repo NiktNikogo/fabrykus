@@ -1,5 +1,9 @@
 #include "Ui/graphInspector.hpp"
+
+#include <format>
+
 #include "graphInspector.hpp"
+#include "Nodes/simpleMachineNode.hpp"
 
 auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid) -> void
 {
@@ -10,17 +14,41 @@ auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid) -> void
 	auto currGraph = graphs[graphIdx];
 	auto nodes = currGraph.getNodes();
 
-
 	ImGui::Spacing();
 	ImGui::Text("Total nodes: ", nodes.size());
 
-
-	if (ImGui::CollapsingHeader("Sources", ImGuiTreeNodeFlags_DefaultOpen)){
+	if (ImGui::CollapsingHeader("Sources", ImGuiTreeNodeFlags_DefaultOpen))
+	{
 		auto sources = currGraph.getSources();
-		for(const auto& source : sources) {
-			for(const auto& ing : source->getOutList()) {
-				ImGui::Text("%2.f | %s", ing.amount, ing.name.c_str());
+		for (auto &source : sources)
+		{
+			ImGui::PushID(source->getId());
+			size_t i = 0;
+			for (auto &ing : source->getOutListRef())
+			{
+				ImGui::PushID(i++);
+				
+				const float amountWidth = 80.0f;
+				ImGui::TextDisabled("Id: %d", source->getId());
+				ImGui::PushItemWidth(amountWidth);
+
+				ImGui::InputDouble(std::format("##Amt").c_str(), &ing.amount);
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+				
+				const float nameWidth = 150.0f;
+				ImGui::PushItemWidth(nameWidth);
+				char buffer[SimpleMachineNode::TEXT_INPUT_MAX_LENGTH]{};
+        		snprintf(buffer, sizeof(buffer), "%s", ing.name.c_str());
+        		if (ImGui::InputText(std::format("##Name").c_str(), buffer, sizeof(buffer))) {
+					ing.name = buffer;
+				}
+       
+				ImGui::PopItemWidth();
+
+				ImGui::PopID();
 			}
+			ImGui::PopID();
 		}
 	}
 }
@@ -49,7 +77,7 @@ const auto GraphInspector::draw(ImFlow::ImNodeFlow &grid, bool canShow) -> void 
 		{
 			ImGui::Text("No graphs found");
 		}
-		else if(graphIdx == -1)
+		else if (graphIdx == -1)
 		{
 			std::string preview = (graphIdx == -1) ? "Select a graph" : "Graph " + std::to_string(graphIdx);
 			if (ImGui::BeginCombo("Graphs", preview.c_str()))
@@ -71,17 +99,16 @@ const auto GraphInspector::draw(ImFlow::ImNodeFlow &grid, bool canShow) -> void 
 				}
 				ImGui::EndCombo();
 			}
-	
 		}
 		if (graphIdx != -1 && graphIdx < graphs.size())
 		{
-			if(ImGui::Button("Go back")) {
+			if (ImGui::Button("Go back"))
+			{
 				graphIdx = -1;
 				ImGui::End();
 				return;
 			}
 			showCurrentGraph(grid);
-			
 		}
 	}
 	ImGui::End();
@@ -123,7 +150,8 @@ const auto GraphInspector::getHiddenByKeys() -> bool const
 
 const auto GraphInspector::getCurrentBoundingBox(ImFlow::ImNodeFlow &grid) -> std::pair<ImVec2, ImVec2>
 {
-	if(graphIdx == -1) {
+	if (graphIdx == -1)
+	{
 		return {{FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MIN}};
 	}
 	return graphs[graphIdx].getBoundingBox(grid);
