@@ -65,14 +65,21 @@ auto DiGraph::getEdges() -> std::vector<Edge>
 
 auto DiGraph::getComponents() -> std::vector<std::vector<Vertex>>
 {
-	std::vector<int> component(boost::num_vertices(graph));
-    int numComponents = boost::connected_components(graph, &component[0]);
+    typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> UndirectedGraph;
+    UndirectedGraph tempGraph(boost::num_vertices(graph));
+
+    for (auto e : boost::make_iterator_range(boost::edges(graph))) {
+        boost::add_edge(boost::source(e, graph), boost::target(e, graph), tempGraph);
+    }
+
+    std::vector<int> component(boost::num_vertices(tempGraph));
+    int numComponents = boost::connected_components(tempGraph, &component[0]);
 
     std::vector<std::vector<Vertex>> groups(numComponents);
     for(size_t i = 0; i < component.size(); i++) {
         groups[component[i]].push_back(i);
     }
-    
+
     return groups;
 }
 
@@ -140,10 +147,19 @@ auto DiGraph::removeNode(const Id &id) -> void
     auto it = idToVertex.find(id);
     if (it == idToVertex.end())
         return;
-    boost::clear_vertex(it->second, graph);
-    boost::remove_vertex(it->second, graph);
-    idToVertex.erase(it);
-    vertexToId.erase(it->second);
+
+    Vertex v = it->second;
+    boost::clear_vertex(v, graph);
+    boost::remove_vertex(v, graph);
+
+    idToVertex.clear();
+    vertexToId.clear();
+    auto [v_begin, v_end] = boost::vertices(graph);
+    for (; v_begin != v_end; ++v_begin) {
+        Id nodeId = graph[*v_begin];
+        idToVertex[nodeId] = *v_begin;
+        vertexToId[*v_begin] = nodeId;
+    }
 }
 
 auto DiGraph::removeEdge(const Id &parent, const Id &child) -> void

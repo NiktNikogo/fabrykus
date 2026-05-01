@@ -76,9 +76,9 @@ auto NodeEditorIO::parseNodes(ImFlow::ImNodeFlow &grid, nlohmann::json nodes, Di
     return biggestId;
 }
 
-auto NodeEditorIO::parseLinks(ImFlow::ImNodeFlow &grid, nlohmann::json links) -> void
+auto NodeEditorIO::parseLinks(ImFlow::ImNodeFlow &grid, nlohmann::json links, DiGraph& digraph) -> void
 {
-     auto nodes = grid.getNodes();
+    auto nodes = grid.getNodes();
     std::unordered_map<int, std::shared_ptr<SimpleMachineNode>> nodeMap;
     for(const auto [id, node] : nodes) {
         auto casted = std::dynamic_pointer_cast<SimpleMachineNode>(node);
@@ -95,7 +95,7 @@ auto NodeEditorIO::parseLinks(ImFlow::ImNodeFlow &grid, nlohmann::json links) ->
         auto fromPin = fromNode->getOutListElement(fromPinIdx);
         auto toNode = nodeMap[toNodeId];
         auto toPin = toNode->getInListElement(toPinIdx);
-        
+        digraph.addEdge(fromNode->getUID(), toNode->getUID(),fromNode->getPos().y);
 
         auto link = std::make_shared<ImFlow::Link>(fromPin, toPin, &grid);
         
@@ -119,7 +119,9 @@ auto NodeEditorIO::load(const std::string &path, ImFlow::ImNodeFlow &grid, DiGra
     std::ifstream file(path);
     nlohmann::json production = nlohmann::json::parse(file);
     size_t newMaxId = parseNodes(grid, production["nodes"], digraph);
-    parseLinks(grid, production["links"]);
+    parseLinks(grid, production["links"], digraph);
+
+    digraph.getIsolatedGraphs(grid);
 
     return newMaxId;
 }
