@@ -12,8 +12,10 @@ auto NodeInspector::setNode(std::shared_ptr<SimpleMachineNode> node) -> void
     isShowing = true;
 }
 
-const auto NodeInspector::draw(ImFlow::ImNodeFlow &grid) -> void const
+const auto NodeInspector::draw(ImFlow::ImNodeFlow &grid, bool canDraw) -> void const
 {
+    if(!canDraw)
+        return;
     if (isHiddenByKeys)
         return;
     if (!isShowing)

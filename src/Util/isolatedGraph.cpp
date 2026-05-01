@@ -24,6 +24,36 @@ auto IsolatedGraph::isProductionLine() const -> bool
 	return (nodes.size() > 0) && (sources.size() > 0) && (targets.size() > 0);
 }
 
+auto IsolatedGraph::getBoundingBox(ImFlow::ImNodeFlow &grid) -> std::pair<ImVec2, ImVec2>
+{
+	ImVec2 minBound = {FLT_MAX, FLT_MAX};
+	ImVec2 maxBound = {-FLT_MAX, -FLT_MAX};
+
+	for(const auto& node : nodes) {
+		auto pos = node->getPos();
+		auto size = node->getSize();
+
+		if (pos.x < minBound.x) minBound.x = pos.x;
+		if (pos.y < minBound.y) minBound.y = pos.y;
+		if (pos.x + size.x > maxBound.x) maxBound.x = pos.x + size.x;
+		if (pos.y + size.y > maxBound.y) maxBound.y = pos.y + size.y;
+	}
+	
+	if(minBound.x != FLT_MAX) {
+		const float padding = 20.0f;
+		minBound.x -= 2*padding;
+		maxBound.x += 2*padding;
+		minBound.y -= padding;
+		maxBound.y += padding;
+
+		auto screenMin = grid.grid2screen(minBound);
+		auto screenMax = grid.grid2screen(maxBound);
+		return {screenMin, screenMax};
+	}
+	
+	return {minBound, maxBound};
+}
+
 IsolatedGraph::IsolatedGraph()
 	: ids(), sources(), nodes(), targets()
 {

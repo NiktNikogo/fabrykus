@@ -12,6 +12,7 @@
 #include "Ui/nodeEditor.hpp"
 #include "Ui/nodeInspector.hpp"
 #include "Ui/menuBuilder.hpp"
+#include "Ui/graphInspector.hpp"
 #include "Nodes/simpleMachineNode.hpp"
 #include "Nodes/ingredientNode.hpp"
 #include "Nodes/productNode.hpp"
@@ -69,7 +70,8 @@ int main(int, char **)
     // Create a node editor with width and height
     size_t size = 500;
     auto editor = std::make_unique<NodeEditor>(size);
-    auto inspector = std::make_unique<NodeInspector>();
+    auto nodeInspector = std::make_unique<NodeInspector>();
+    auto graphInspector = std::make_unique<GraphInspector>();
 
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr;
@@ -106,18 +108,26 @@ int main(int, char **)
             .addItem("Exit", "", {})
             .endMenu()
             .beginMenu("Windows")
-            .addItem("Node Insepctor", "Ctrl+I", [&inspector]()
-                     { inspector->setHiddenByKeys(!inspector->getHiddenByKeys()); })
+            .addItem("Node Insepctor", "Ctrl+I", [&nodeInspector, &graphInspector]() {
+                if(!graphInspector->getShow()) {
+                    nodeInspector->setHiddenByKeys(!nodeInspector->getHiddenByKeys());
+                } })
+            .addItem("Graph Inspector", "Ctrl+G", [&nodeInspector, &graphInspector]() { 
+                if(!nodeInspector->getShow()) {
+                    graphInspector->setHiddenByKeys(!graphInspector->getHiddenByKeys()); 
+                } })
             .endMenu();
 
         float screenW = ImGui::GetIO().DisplaySize.x;
         float screenH = ImGui::GetIO().DisplaySize.y;
-        float inspectorWidth = inspector->inspectorWidth;
-        float menuHeight = inspector->menuHeight;
+        float inspectorWidth = nodeInspector->inspectorWidth;
+        float menuHeight = nodeInspector->menuHeight;
 
         ImVec2 mousePos = ImGui::GetMousePos();
         bool mouseOverInspector = (mousePos.x >= screenW - inspectorWidth && mousePos.y >= menuHeight);
-        bool inspectorActive = inspector->getShow() && !inspector->getHiddenByKeys();
+        bool nodeActive = nodeInspector->getShow() && !nodeInspector->getHiddenByKeys();
+        bool graphActive = graphInspector->getShow() && !graphInspector->getHiddenByKeys();
+        bool inspectorActive = nodeActive || graphActive;
         bool isFileDialogActive = ImGuiFileDialog::Instance()->IsOpened();
 
         bool backupButtons[5];
@@ -130,16 +140,17 @@ int main(int, char **)
                 backupButtons[n] = io.MouseDown[n];
                 io.MouseDown[n] = false;
             }
-            if(isTyping) {
-                for(int n = 0; n < 155; n++) {
+            if (isTyping)
+            {
+                for (int n = 0; n < 155; n++)
+                {
                     backupKeys[n] = io.KeysData[n].Down;
                     io.KeysData[n].Down = false;
                 }
             }
         }
 
-
-        editor->update(ImGui::GetIO().DisplaySize);
+        editor->update(ImGui::GetIO().DisplaySize, graphInspector->getCurrentBoundingBox(editor->getGrid()));
         editor->draw();
 
         if (inspectorActive && mouseOverInspector)
@@ -148,24 +159,30 @@ int main(int, char **)
             {
                 ImGui::GetIO().MouseDown[n] = backupButtons[n];
             }
-            if(isTyping) {
-                for(int n = 0; n < 155; n++) {
+            if (isTyping)
+            {
+                for (int n = 0; n < 155; n++)
+                {
                     io.KeysData[n].Down = backupKeys[n];
                 }
             }
         }
+
+        nodeInspector->update();
+        nodeInspector->draw(editor->getGrid(), graphInspector->getHiddenByKeys());
         
-        inspector->update();
-        inspector->draw(editor->getGrid());
-
-
         auto currentNode = editor->getSelectedNode();
         if (currentNode != nullptr)
         {
-            inspector->setNode(editor->getSelectedNode());
+            nodeInspector->setNode(editor->getSelectedNode());
         }
-        ImGui::Render();
 
+        graphInspector->update(editor->getGraph(), editor->getGrid());
+        graphInspector->draw(editor->getGrid(), true);
+
+
+        ImGui::Render();
+        
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);

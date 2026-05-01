@@ -14,7 +14,7 @@ private:
     ImFlow::ImNodeFlow grid;
     ImVec2 size;
     DiGraph digraph;
-
+    std::pair<ImVec2, ImVec2> graphBoundingBox;
     const ImGuiWindowFlags editorFlags = ImGuiWindowFlags_NoTitleBar |
                              ImGuiWindowFlags_NoResize |
                              ImGuiWindowFlags_NoMove |
@@ -36,8 +36,9 @@ public:
     auto draw() -> void override;
     inline auto printGraph() -> void { digraph.printGraph(); };
     inline auto getGrid() -> ImFlow::ImNodeFlow& {return grid;};
+    inline auto getGraph() -> DiGraph& {return digraph;};
     auto getSelectedNode() -> std::shared_ptr<SimpleMachineNode>;
-    auto update(ImVec2 size) -> void;
+    auto update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox ) -> void;
     auto saveToFile(const std::string& path) -> void;
     auto loadFromAFile(const std::string& path) -> void;
     auto setNewId(size_t id) -> void {idCounter = id;};

@@ -29,7 +29,7 @@ public:
     {}
     
     auto setNode(std::shared_ptr<SimpleMachineNode> node) -> void;
-    const auto draw(ImFlow::ImNodeFlow& grid) -> void const;
+    const auto draw(ImFlow::ImNodeFlow& grid, bool canDraw) -> void const;
     auto update() -> void;
     auto setShow(bool isShowings) -> void;
     const auto getShow() -> bool const;

@@ -15,12 +15,18 @@ NodeEditor::NodeEditor(size_t gridSize)
 }
 
 auto NodeEditor::draw() -> void
-{   
-    ImGui::SetNextWindowPos(ImVec2(0,0));
+{
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(this->size);
     if (ImGui::Begin("Node Editor", nullptr, editorFlags))
     {
         grid.update();
+        ImGui::GetWindowDrawList()->AddRect(
+            graphBoundingBox.first, graphBoundingBox.second,
+            IM_COL32(0, 255, 255, 255),
+            10.0f,
+            0,
+            3.0f);
         if (ImGui::IsKeyPressed(ImGuiKey_2))
         {
             digraph.printTopologicalSort();
@@ -41,9 +47,10 @@ auto NodeEditor::draw() -> void
         if (ImGui::IsKeyPressed(ImGuiKey_4))
         {
             auto links = grid.getLinks();
-            for(auto link : links) {
+            for (auto link : links)
+            {
                 auto locked = link.lock();
-                std::cout << locked->right()<< " " << locked->left()<< '\n';
+                std::cout << locked->right() << " " << locked->left() << '\n';
             }
         }
         if (ImGui::IsKeyPressed(ImGuiKey_5))
@@ -128,12 +135,13 @@ auto NodeEditor::getSelectedNode() -> std::shared_ptr<SimpleMachineNode>
     return nullptr;
 }
 
-auto NodeEditor::update(ImVec2 size) -> void
+auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox) -> void
 {
     this->setSize(size);
     this->size = size;
 
-    if (ImGuiFileDialog::Instance()->IsOpened()) {
+    if (ImGuiFileDialog::Instance()->IsOpened())
+    {
         ImVec2 screenSize = ImGui::GetIO().DisplaySize;
         ImGui::SetNextWindowSize(ImVec2(screenSize.x * 0.8f, screenSize.y * 0.8f), ImGuiCond_Appearing);
         ImGui::SetNextWindowPos(ImVec2(screenSize.x * 0.5f, screenSize.y * 0.5f), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -160,12 +168,15 @@ auto NodeEditor::update(ImVec2 size) -> void
 
     typedef ImFlow::NodeUID NodeId;
     std::set<NodeId> aliveIds;
-    for(const auto& node: grid.getNodes()) {
+    for (const auto &node : grid.getNodes())
+    {
         aliveIds.insert(node.second->getUID());
     }
-    for(const auto& dataId: digraph.getNodes()) {
-        if(aliveIds.find(dataId) == aliveIds.end()) {
-           digraph.removeNode(dataId);
+    for (const auto &dataId : digraph.getNodes())
+    {
+        if (aliveIds.find(dataId) == aliveIds.end())
+        {
+            digraph.removeNode(dataId);
         }
     }
 
@@ -183,7 +194,7 @@ auto NodeEditor::update(ImVec2 size) -> void
             digraph.addEdge(left, right, pinY);
         }
     }
-   
+    this->graphBoundingBox = graphBoundingBox;
 }
 
 auto NodeEditor::saveToFile(const std::string &path) -> void
@@ -214,17 +225,20 @@ auto NodeEditor::arrangeNodes() -> void
     }
 
     std::map<ImFlow::NodeUID, ImVec2> nodeSizes{};
-    for(const auto& [id, node] : grid.getNodes()) {
-      nodeSizes[id] = node->getSize();
+    for (const auto &[id, node] : grid.getNodes())
+    {
+        nodeSizes[id] = node->getSize();
     }
 
     auto newPositionsOpt = digraph.calculatePositions(nodeSizes);
 
-    if(!newPositionsOpt.has_value()) return;
+    if (!newPositionsOpt.has_value())
+        return;
 
     auto newPositions = *newPositionsOpt;
     auto mousePos = grid.screen2grid(ImGui::GetMousePos());
-    for(auto& [id, node] : grid.getNodes()) {
+    for (auto &[id, node] : grid.getNodes())
+    {
         auto newPos = newPositions[id] + ImVec2{mousePos.x, mousePos.y};
         node->setPos(newPos);
     }
