@@ -17,8 +17,9 @@ MergerNode::MergerNode(size_t id) : SimpleMachineNode(id)
 	ins.push_back({1, "Iron ingot"});
 	ins.push_back({1, "Iron ingot"});
 	outs.push_back({1, "Iron ingot"});
-	setTitle(NodeFactory::getNameFromType(type).c_str());
-	setStyle(orange());
+	
+    setTitle(getTitle());
+    setStyle(getColor());
 
 	syncPins();
 }
@@ -27,8 +28,8 @@ MergerNode::MergerNode(size_t id, std::vector<Ingredient> ins, std::vector<Ingre
 	: SimpleMachineNode(id, 1.0, 1.0, ins, outs)
 {
 	type = NodeType::MERGER;
-	setTitle(NodeFactory::getNameFromType(type).c_str());
-	setStyle(orange());
+    setTitle(getTitle());
+    setStyle(getColor());
 
 	syncPins();
 }
@@ -128,8 +129,8 @@ auto MergerNode::drawInspector() -> bool
 
 auto MergerNode::deserialize(nlohmann::json data) -> void
 {
-	setTitle(NodeFactory::getNameFromType(type).c_str());
-	setStyle(orange());
+    setTitle(getTitle());
+    setStyle(getColor());
 
 	id = data["id"];
 	fuel = data["fuel"];
@@ -140,4 +141,9 @@ auto MergerNode::deserialize(nlohmann::json data) -> void
 	outs = data["outs"].get<std::vector<Ingredient>>();
 
 	syncPins();
+}
+
+const auto MergerNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
+{
+	return orange();
 }

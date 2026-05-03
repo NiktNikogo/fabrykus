@@ -15,8 +15,9 @@ SplitterNode::SplitterNode(size_t id) : SimpleMachineNode(id)
 	ins.push_back({1, "Iron ore"});
 	outs.push_back({0.5, "Iron ore"});
 	outs.push_back({0.5, "Iron ore"});
-	setTitle(NodeFactory::getNameFromType(type).c_str());
-	setStyle(purple());
+	
+    setTitle(getTitle());
+    setStyle(getColor());
 
 	syncPins();
 }
@@ -25,8 +26,9 @@ SplitterNode::SplitterNode(size_t id, std::vector<Ingredient> ins, std::vector<I
 	: SimpleMachineNode(id, 1.0, 1.0, ins, outs)
 {
 	type = NodeType::SPLITTER;
-	setTitle(NodeFactory::getNameFromType(type).c_str());
-	setStyle(purple());
+	
+    setTitle(getTitle());
+    setStyle(getColor());
 
 	syncPins();
 }
@@ -121,8 +123,8 @@ auto SplitterNode::drawInspector() -> bool
 
 auto SplitterNode::deserialize(nlohmann::json data) -> void
 {
-	setTitle(NodeFactory::getNameFromType(type).c_str());
-	setStyle(purple());
+    setTitle(getTitle());
+    setStyle(getColor());
 
 	id = data["id"];
 	fuel = data["fuel"];
@@ -133,4 +135,9 @@ auto SplitterNode::deserialize(nlohmann::json data) -> void
 	outs = data["outs"].get<std::vector<Ingredient>>();
 
 	syncPins();
+}
+
+const auto SplitterNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
+{
+	return purple();
 }

@@ -14,4 +14,5 @@ public:
     auto syncPins() -> void override;
     auto drawInspector() -> bool override;
     auto deserialize(nlohmann::json data) -> void override;
+    const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle> override;
 };

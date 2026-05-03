@@ -19,10 +19,18 @@ protected:
     std::vector<Ingredient> outs;
     std::vector<ImFlow::Pin *> inPins;
     std::vector<ImFlow::Pin *> outPins;
+    bool isReverseFlow = false;
+
+public:
+    enum Flow {
+        FORWARD,
+        REVERSE
+    };
 
 public:
     static const size_t TEXT_INPUT_MAX_LENGTH = 128;
     NodeType type = NodeType::MACHINE;
+    Flow flow;
 protected:
     auto formatInputIngredients(const char *category, const char *prefix, std::vector<Ingredient> &list,
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc,
@@ -41,8 +49,10 @@ public:
     virtual auto syncPins() -> void;
     inline const std::vector<Ingredient> &getInList() const { return ins; }
     inline const std::vector<Ingredient> &getOutList() const { return outs; }
+    inline std::vector<Ingredient> &getOutListRef() { return outs; }
     inline ImFlow::Pin* getInListElement(size_t idx) const {return inPins[idx];}
     inline ImFlow::Pin* getOutListElement(size_t idx) const {return outPins[idx];}
+    inline void setFlow(bool reversed) {isReverseFlow = reversed;}
     inline const size_t getId() const { return id; }
     const auto print() const -> void;
     virtual const auto getNodeType() const -> NodeType {return type;};
@@ -50,4 +60,6 @@ public:
     virtual auto deserialize(nlohmann::json data) -> void;
     const auto getInPinIndex(ImFlow::Pin *pin) const -> size_t;
     const auto getOutPinIndex(ImFlow::Pin *pin) const -> size_t;    
+    const auto getTitle() -> std::string;
+    virtual const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle>;
 };

@@ -14,8 +14,8 @@ ProductNode::ProductNode(size_t id) : SimpleMachineNode(id)
     outs.clear();
     ins.push_back({2, "Iron ingot"});
     time = 1;
-    setTitle(NodeFactory::getNameFromType(type).c_str());
-    setStyle(ImFlow::NodeStyle::red());
+    setTitle(getTitle());
+    setStyle(getColor());
 
     syncPins();
 }
@@ -25,8 +25,8 @@ ProductNode::ProductNode(size_t id, std::vector<Ingredient> ins)
     SimpleMachineNode(id, 1.0, 1.0, ins, {})
 {
     type = NodeType::PRODUCT;
-    setTitle(NodeFactory::getNameFromType(type).c_str());
-    setStyle(ImFlow::NodeStyle::red());
+    setTitle(getTitle());
+    setStyle(getColor());
     syncPins();
 }
 
@@ -94,13 +94,18 @@ auto ProductNode::drawInspector() -> bool
 }
 
 auto ProductNode::deserialize(nlohmann::json data) -> void 
-{
-    setTitle("Storage");
-    setStyle(ImFlow::NodeStyle::red());
+{  
+    setTitle(getTitle());
+    setStyle(getColor());
 
     id = data["id"];
     ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
     setPos(pos);
     ins = data["ins"].get<std::vector<Ingredient>>();
     syncPins();
+}
+
+const auto ProductNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle> 
+{
+	return ImFlow::NodeStyle::red();
 }

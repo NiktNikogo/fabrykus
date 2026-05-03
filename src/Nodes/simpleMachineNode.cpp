@@ -16,8 +16,8 @@ SimpleMachineNode::SimpleMachineNode(size_t id) : id(id), fuel(1.0), time(1.0), 
 {
     ins = {{1, "Iron ore"}};
     outs = {{2, "Iron ingot"}};
-    setTitle(NodeFactory::getNameFromType(type).c_str());
-    setStyle(ImFlow::NodeStyle::cyan());
+    setTitle(getTitle());
+    setStyle(getColor());
 
     syncPins();
 }
@@ -169,8 +169,7 @@ auto SimpleMachineNode::syncPins() -> void
                     result.amount = 0;
                 }
             
-                return result; 
-            });
+                return result; });
         p->renderer([this, i](ImFlow::Pin *p)
                     {
             if (i < outs.size()) {
@@ -224,8 +223,8 @@ auto SimpleMachineNode::serialize() -> nlohmann::json
 auto SimpleMachineNode::deserialize(nlohmann::json data) -> void
 {
 
-    setTitle(NodeFactory::getNameFromType(type).c_str());
-    setStyle(ImFlow::NodeStyle::cyan());
+    setTitle(getTitle());
+    setStyle(getColor());
 
     id = data["id"];
     fuel = data["fuel"];
@@ -252,6 +251,16 @@ const auto SimpleMachineNode::getOutPinIndex(ImFlow::Pin *pin) const -> size_t
     if (it == outPins.end())
         return 99999;
     return std::distance(outPins.begin(), it);
+}
+
+const auto SimpleMachineNode::getTitle() -> std::string
+{
+    return NodeFactory::getNameFromType(type).c_str();
+}
+
+const auto SimpleMachineNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
+{
+	return ImFlow::NodeStyle::cyan();
 }
 
 auto SimpleMachineNode::formatInputIngredients(const char *category, const char *prefix,
@@ -302,7 +311,8 @@ auto SimpleMachineNode::formatInputIngredients(const char *category, const char 
                 {
                     in.name = newName;
                 }
-                for (auto &other : *config.keeps) {
+                for (auto &other : *config.keeps)
+                {
                     other.name = newName;
                 }
             }

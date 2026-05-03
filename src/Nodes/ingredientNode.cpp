@@ -13,8 +13,8 @@ IngredientNode::IngredientNode(size_t id): SimpleMachineNode(id)
     ins.clear();
     outs.clear();
     outs.push_back({1, "Iron ore"});
-    setTitle(NodeFactory::getNameFromType(type).c_str());
-    setStyle(ImFlow::NodeStyle::green());
+    setTitle(getTitle());
+    setStyle(getColor());
     syncPins();
 }
 
@@ -23,8 +23,8 @@ IngredientNode::IngredientNode(size_t id, double time, std::vector<Ingredient> o
     SimpleMachineNode(id, time, 1.0, {}, outs)
 {
     type = NodeType::INGREDIENT;
-    setTitle(NodeFactory::getNameFromType(type).c_str());
-    setStyle(ImFlow::NodeStyle::green());
+    setTitle(getTitle());
+    setStyle(getColor());
     syncPins();
 }
 
@@ -84,8 +84,8 @@ auto IngredientNode::drawInspector() -> bool
 
 auto IngredientNode::deserialize(nlohmann::json data) -> void
 {
-    setTitle("Source");
-    setStyle(ImFlow::NodeStyle::green());
+    setTitle(getTitle());
+    setStyle(getColor());
 
     id = data["id"];
     time = data["time"];
@@ -94,4 +94,9 @@ auto IngredientNode::deserialize(nlohmann::json data) -> void
     outs = data["outs"].get<std::vector<Ingredient>>();
  
     syncPins();
+}
+
+const auto IngredientNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
+{
+	return ImFlow::NodeStyle::green();
 }

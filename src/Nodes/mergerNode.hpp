@@ -25,4 +25,5 @@ public:
 	auto drawInspector() -> bool override;
 	auto deserialize(nlohmann::json data) -> void override;
 	double totalIntake = 0.0f;
+	virtual const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle>;
 };
