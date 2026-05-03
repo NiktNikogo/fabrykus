@@ -34,6 +34,7 @@ add_library(app_lib STATIC
     src/Nodes/simpleMachineNode.cpp
     src/Nodes/productNode.cpp
     src/Nodes/ingredientNode.cpp
+    src/Nodes/distributorNode.cpp
     src/Nodes/splitterNode.cpp
     src/Nodes/mergerNode.cpp
     src/Util/digraph.cpp

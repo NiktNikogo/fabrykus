@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Nodes/simpleMachineNode.hpp"
+#include "Nodes/distributorNode.hpp"
 #include "Util/nodeTypes.hpp"
 #include "ImNodeFlow.h"
 
-class MergerNode : public SimpleMachineNode
+class MergerNode : public DistributorNode
 {
 private:
 	static std::shared_ptr<ImFlow::NodeStyle> orange() { 
@@ -21,9 +21,7 @@ public:
 	MergerNode(size_t id, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
 	auto draw() -> void override;
 	auto update() -> void;
-	auto syncPins() -> void override;
 	auto drawInspector() -> bool override;
 	auto deserialize(nlohmann::json data) -> void override;
-	double totalIntake = 0.0f;
-	virtual const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle>;
+	virtual const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle> override;
 };

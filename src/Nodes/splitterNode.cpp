@@ -2,13 +2,15 @@
 #include "Util/ingredient.hpp"
 #include "Util/nodeFactory.hpp"
 
-SplitterNode::SplitterNode() : SimpleMachineNode()
+SplitterNode::SplitterNode() : DistributorNode()
 {
 	type = NodeType::SPLITTER;
+	mode = Mode::SPLITTER;
 }
 
-SplitterNode::SplitterNode(size_t id) : SimpleMachineNode(id)
+SplitterNode::SplitterNode(size_t id) : DistributorNode(id)
 {
+	mode = Mode::SPLITTER;
 	type = NodeType::SPLITTER;
 	ins.clear();
 	outs.clear();
@@ -23,8 +25,9 @@ SplitterNode::SplitterNode(size_t id) : SimpleMachineNode(id)
 }
 
 SplitterNode::SplitterNode(size_t id, std::vector<Ingredient> ins, std::vector<Ingredient> outs)
-	: SimpleMachineNode(id, 1.0, 1.0, ins, outs)
+	: DistributorNode(id, ins, outs)
 {
+	mode = Mode::SPLITTER;
 	type = NodeType::SPLITTER;
 	
     setTitle(getTitle());
@@ -42,67 +45,9 @@ auto SplitterNode::draw() -> void
 
 auto SplitterNode::update() -> void
 {
-}
-
-auto SplitterNode::syncPins() -> void
-{
-	std::vector<uintptr_t> inUids, outUids;
-	for (auto &p : this->getIns())
-		inUids.push_back(p->getUid());
-	for (auto &p : this->getOuts())
-		outUids.push_back(p->getUid());
-	for (auto id : inUids)
-		this->dropIN(id);
-	for (auto id : outUids)
-		this->dropOUT(id);
-	inPins.clear();
-	outPins.clear();
-
-	auto LabelMatchFilter = [this](ImFlow::Pin *out, ImFlow::Pin *in) -> bool
-	{
-		auto *outNode = dynamic_cast<SimpleMachineNode *>(out->getParent());
-		auto *inNode = dynamic_cast<SimpleMachineNode *>(in->getParent());
-		if (!outNode || !inNode)
-			return false;
-
-		if (out->getUid() >= outNode->getOutList().size() || in->getUid() >= inNode->getInList().size())
-			return false;
-
-		return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
-	};
-	for (size_t i = 0; i < ins.size(); i++)
-
-	{
-		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
-																									{
-			if (i < ins.size()) {
-				Ingredient recived = getInVal<Ingredient>(i);
-				this->inAmount = recived.amount;
-				
-				ImGui::Text("%s", this->ins[i].name.c_str());
-				ImGui::TextDisabled("I: %.2f", inAmount);
-				ImGui::SameLine();
-				p->drawSocket();
-				p->drawDecoration();
-			} });
-		inPins.push_back(p);
-	}
-
-	for (size_t i = 0; i < outs.size(); i++)
-	{
-		auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]()
-																 { return Ingredient{this->outs[i].amount * this->inAmount, this->outs[i].name}; });
-
-		p->renderer([this, i](ImFlow::Pin *p)
-					{
-			if (i < outs.size()) {
-				ImGui::Text("%s", this->outs[i].name.c_str());
-				ImGui::TextDisabled("O: %.2f%%", this->outs[i].amount);
-				p->drawSocket();
-				p->drawDecoration();
-			} });
-		outPins.push_back(p);
-	}
+	ImGui::Text("UID: 0x%lX", this->getUID());
+	ImGui::Text("ID: %zd", this->getId());
+	ImGui::PushItemWidth(100.f);
 }
 
 auto SplitterNode::drawInspector() -> bool

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Nodes/simpleMachineNode.hpp"
+#include "Nodes/distributorNode.hpp"
 #include "Util/nodeTypes.hpp"
 #include "ImNodeFlow.h"
 
-class SplitterNode : public SimpleMachineNode
+class SplitterNode : public DistributorNode
 {
 private:
 
@@ -16,7 +16,6 @@ private:
             6.5f
         );
     }
-    double inAmount = 0.0f;
 
 public:
     SplitterNode();
@@ -24,8 +23,7 @@ public:
     SplitterNode(size_t id, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
     auto draw() -> void override;
     auto update() -> void;
-    auto syncPins() -> void override;
     auto drawInspector() -> bool override;
     auto deserialize(nlohmann::json data) -> void override;
-    virtual const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle>;
+    virtual const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle> override;
 };

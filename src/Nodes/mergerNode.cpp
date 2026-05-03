@@ -4,14 +4,16 @@
 #include "Util/ingredient.hpp"
 #include "Util/nodeFactory.hpp"
 
-MergerNode::MergerNode() : SimpleMachineNode()
+MergerNode::MergerNode() : DistributorNode()
 {
 	type = NodeType::MERGER;
+	mode = Mode::MERGER;
 }
 
-MergerNode::MergerNode(size_t id) : SimpleMachineNode(id)
+MergerNode::MergerNode(size_t id) : DistributorNode(id)
 {
 	type = NodeType::MERGER;
+	mode = Mode::MERGER;
 	ins.clear();
 	outs.clear();
 	ins.push_back({1, "Iron ingot"});
@@ -25,16 +27,17 @@ MergerNode::MergerNode(size_t id) : SimpleMachineNode(id)
 }
 
 MergerNode::MergerNode(size_t id, std::vector<Ingredient> ins, std::vector<Ingredient> outs)
-	: SimpleMachineNode(id, 1.0, 1.0, ins, outs)
+	: DistributorNode(id, ins, outs)
 {
 	type = NodeType::MERGER;
+	mode = Mode::MERGER;
     setTitle(getTitle());
     setStyle(getColor());
 
 	syncPins();
 }
 
-auto MergerNode::draw() -> void
+auto MergerNode::draw() -> void 
 {
 	ImGui::Text("UID: 0x%lX", this->getUID());
 	ImGui::Text("ID: %zd", this->getId());
@@ -43,72 +46,6 @@ auto MergerNode::draw() -> void
 
 auto MergerNode::update() -> void
 {
-}
-
-auto MergerNode::syncPins() -> void
-{
-	std::vector<uintptr_t> inUids, outUids;
-	for (auto &p : this->getIns())
-		inUids.push_back(p->getUid());
-	for (auto &p : this->getOuts())
-		outUids.push_back(p->getUid());
-	for (auto id : inUids)
-		this->dropIN(id);
-	for (auto id : outUids)
-		this->dropOUT(id);
-	inPins.clear();
-	outPins.clear();
-
-	auto LabelMatchFilter = [this](ImFlow::Pin *out, ImFlow::Pin *in) -> bool
-	{
-		auto *outNode = dynamic_cast<SimpleMachineNode *>(out->getParent());
-		auto *inNode = dynamic_cast<SimpleMachineNode *>(in->getParent());
-		if (!outNode || !inNode)
-			return false;
-
-		if (out->getUid() >= outNode->getOutList().size() || in->getUid() >= inNode->getInList().size())
-			return false;
-
-		return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
-	};
-	for (size_t i = 0; i < ins.size(); i++)
-	{
-		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer(
-			[this, i](ImFlow::Pin *p) {
-				if (i < ins.size()) {
-					auto intake = getInVal<Ingredient>(i).amount/totalIntake;
-					ins[i].amount = intake;
-					ImGui::Text("%s", this->ins[i].name.c_str());
-					ImGui::TextDisabled("I: %.2f%%", ins[i].amount);
-					ImGui::SameLine();
-					p->drawSocket();
-					p->drawDecoration();
-				} 
-			});
-		inPins.push_back(p);
-	}
-	for (size_t i = 0; i < outs.size(); i++)
-	{
-
-		auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]()
-																 { 
-			this->totalIntake = 0.0f;
-			for(size_t j = 0; j < ins.size(); j++) {
-				auto  ing = getInVal<Ingredient>(j);
-				totalIntake += getInVal<Ingredient>(j).amount;
-			}
-			return Ingredient{totalIntake, this->outs[i].name}; });
-
-		p->renderer([this, i](ImFlow::Pin *p)
-					{
-            if (i < outs.size()) {
-                ImGui::Text("%s", this->outs[i].name.c_str());
-				ImGui::TextDisabled("O: %.2f%%", totalIntake);
-                p->drawSocket();
-                p->drawDecoration();
-            } });
-		outPins.push_back(p);
-	}
 }
 
 auto MergerNode::drawInspector() -> bool
