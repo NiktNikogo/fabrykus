@@ -410,19 +410,6 @@ auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes) -> std::
     }
 
     std::map<size_t, std::vector<Id>> results;
-    for (const auto &[id, depth] : *depths)
-    {
-        std::cout << std::format("{} {:#X} {}", id, id, depth) << '\n';
-        auto parents = getParents(id);
-        if (parents.size() > 0)
-        {
-            for (const auto &parent : parents)
-            {
-                std::cout << std::format("Parent: {}", parent) << '\n';
-            }
-        }
-        results[depth].push_back(id);
-    }
 
     std::map<Id, ImVec2> newPositions{};
     float currentX = 0.0f;
