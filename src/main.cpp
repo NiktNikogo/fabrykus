@@ -178,7 +178,7 @@ int main(int, char **)
         }
 
         graphInspector->update(editor->getGraph(), editor->getGrid());
-        graphInspector->draw(editor->getGrid(), true);
+        graphInspector->draw(editor->getGrid(), editor->getGraph(), true);
 
 
         ImGui::Render();

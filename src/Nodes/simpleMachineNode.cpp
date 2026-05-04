@@ -9,10 +9,10 @@
 #include "Util/ingredient.hpp"
 #include "Util/nodeFactory.hpp"
 
-SimpleMachineNode::SimpleMachineNode() : fuel(0.0), time(0.0), inPins(), outPins{}
+SimpleMachineNode::SimpleMachineNode() : fuel(1.0), time(1.0), inPins(), outPins{}, flow(Flow::FORWARD)
 {
 }
-SimpleMachineNode::SimpleMachineNode(size_t id) : id(id), fuel(1.0), time(1.0), inPins(), outPins{}
+SimpleMachineNode::SimpleMachineNode(size_t id) : id(id), fuel(1.0), time(1.0), inPins(), outPins{}, flow(Flow::FORWARD)
 {
     ins = {{1, "Iron ore"}};
     outs = {{2, "Iron ingot"}};
@@ -27,7 +27,8 @@ SimpleMachineNode::SimpleMachineNode(size_t id, double time, double fuel, std::v
       time(time),
       fuel(fuel),
       ins(ins),
-      outs(outs)
+      outs(outs),
+      flow(Flow::FORWARD)
 {
     syncPins();
 }
@@ -62,12 +63,12 @@ auto SimpleMachineNode::draw() -> void
 
 auto SimpleMachineNode::drawInspector() -> bool
 {
-    if (formatInputIngredients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid)
+    if (formatInputIngredients("Inputs:", "in", getInList(), this->getIns(), [this](uintptr_t uid)
                                { this->dropIN(uid); }))
     {
         return true;
     }
-    if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
+    if (formatInputIngredients("Output:", "out", getOutList(), this->getOuts(), [this](uintptr_t uid)
                                { this->dropOUT(uid); }))
     {
         return true;
@@ -96,8 +97,8 @@ auto SimpleMachineNode::update() -> void
             {
                 size_t otherIdx = other->getUid();
 
-                std::string myInputName = this->ins[i].name;
-                std::string theirOutputName = otherNode->outs[otherIdx].name;
+                std::string myInputName = this->getInList()[i].name;
+                std::string theirOutputName = otherNode->getOutList()[otherIdx].name;
 
                 if (myInputName != theirOutputName)
                 {
@@ -122,7 +123,7 @@ auto SimpleMachineNode::syncPins() -> void
         this->dropOUT(id);
     inPins.clear();
     outPins.clear();
-
+    
     auto LabelMatchFilter = [this](ImFlow::Pin *out, ImFlow::Pin *in) -> bool
     {
         auto *outNode = dynamic_cast<SimpleMachineNode *>(out->getParent());
@@ -130,21 +131,21 @@ auto SimpleMachineNode::syncPins() -> void
         if (!outNode || !inNode)
             return false;
 
-        if (out->getUid() >= outNode->outs.size() || in->getUid() >= inNode->ins.size())
+        if (out->getUid() >= outNode->getOutList().size() || in->getUid() >= inNode->getInList().size())
             return false;
 
-        return outNode->outs[out->getUid()].name == inNode->ins[in->getUid()].name;
+        return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
     };
 
-    for (size_t i = 0; i < ins.size(); i++)
+    for (size_t i = 0; i < getInList().size(); i++)
     {
         auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
                                                                                                     {
-            if (i < ins.size()) {
+            if (i < getInList().size()) {
                 Ingredient recived = getInVal<Ingredient>(i);
-                double demand = this->ins[i].amount/this->time * this->calcOptimalCount();
-                ImGui::Text("%s", this->ins[i].name.c_str());
-                ImGui::TextDisabled("R: %.2f units/s ", ins[i].amount);
+                double demand = this->getInList()[i].amount/this->time * this->calcOptimalCount();
+                ImGui::Text("%s", this->getInList()[i].name.c_str());
+                ImGui::TextDisabled("R: %.2f units/s ", getInList()[i].amount);
                 ImGui::TextDisabled("I: %.2f units/s ", recived.amount);
 
                 ImGui::SameLine();
@@ -154,14 +155,14 @@ auto SimpleMachineNode::syncPins() -> void
         inPins.push_back(p);
     }
 
-    for (size_t i = 0; i < outs.size(); i++)
+    for (size_t i = 0; i < getOutList().size(); i++)
     {
         auto p = this->addOUT_uid<Ingredient>(i, " ")
                      ->behaviour([this, i]()
                                  {
                 float eff = this->calcEfficiency();
                 float count = this->calcOptimalCount();
-                Ingredient result = this->outs[i];
+                Ingredient result = this->getOutList()[i];
                 
                 if(this->time > 0) {
                     result.amount = (result.amount/this->time) * eff * count;
@@ -172,11 +173,11 @@ auto SimpleMachineNode::syncPins() -> void
                 return result; });
         p->renderer([this, i](ImFlow::Pin *p)
                     {
-            if (i < outs.size()) {
+            if (i < getOutList().size()) {
                 float eff = this->calcEfficiency();
                 float count = this->calcOptimalCount();
-                Ingredient result = this->outs[i];
-                ImGui::Text("%s", this->outs[i].name.c_str());
+                Ingredient result = this->getOutList()[i];
+                ImGui::Text("%s", this->getOutList()[i].name.c_str());
                 ImGui::TextDisabled("R: %.2f units/s ", result.amount/this->time);
                 ImGui::TextDisabled("O: %.2f units/s ", (result.amount/this->time) * eff * count);
                 p->drawSocket();
@@ -255,12 +256,24 @@ const auto SimpleMachineNode::getOutPinIndex(ImFlow::Pin *pin) const -> size_t
 
 const auto SimpleMachineNode::getTitle() -> std::string
 {
-    return NodeFactory::getNameFromType(type).c_str();
+    std::string base = NodeFactory::getNameFromType(type);
+    if(isReverseFlow) {
+        base += "^-1";
+    }
+    return base.c_str();
 }
 
 const auto SimpleMachineNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
 {
-	return ImFlow::NodeStyle::cyan();
+    if(isReverseFlow) {
+        return std::make_shared<ImFlow::NodeStyle>(
+            IM_COL32(255, 127, 80, 255),  //cyan
+            ImColor(233, 241, 244, 255),
+            6.5f
+        );
+    } else {
+	    return ImFlow::NodeStyle::cyan();
+    }
 }
 
 auto SimpleMachineNode::formatInputIngredients(const char *category, const char *prefix,
@@ -349,14 +362,15 @@ auto SimpleMachineNode::calcEfficiency() -> double
     if (this->time <= 0)
         return 0.0f;
 
-    for (size_t i = 0; i < ins.size(); i++)
+    auto ingredients = getInList();
+    for (size_t i = 0; i < ingredients.size(); i++)
     {
         Ingredient recived = getInVal<Ingredient>(i);
 
-        if (recived.name == ins[i].name)
+        if (recived.name == ingredients[i].name)
         {
 
-            double demand = ins[i].amount / this->time;
+            double demand = ingredients[i].amount / this->time;
 
             if (demand <= 0)
                 continue;
@@ -374,19 +388,20 @@ auto SimpleMachineNode::calcEfficiency() -> double
 
 auto SimpleMachineNode::calcOptimalCount() -> double
 {
-    if (time <= 0 || ins.empty())
+    auto ingredients = getInList();
+    if (time <= 0 || ingredients.empty())
         return 0.0;
 
     double maxCount = 0.0;
 
-    for (size_t i = 0; i < ins.size(); i++)
+    for (size_t i = 0; i < ingredients.size(); i++)
     {
         Ingredient recived = getInVal<Ingredient>(i);
 
-        if (recived.name == ins[i].name)
+        if (recived.name == ingredients[i].name)
         {
 
-            double demand = ins[i].amount / this->time;
+            double demand = ingredients[i].amount / this->time;
 
             if (demand <= 0)
                 continue;

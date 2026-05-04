@@ -98,7 +98,7 @@ auto DiGraph::getIsolatedGraphs(ImFlow::ImNodeFlow &grid) -> std::vector<Isolate
             isoGraphs.push_back(IsolatedGraph(isoGraph));
         }
     }
-
+    
     return isoGraphs;
 }
 
@@ -159,6 +159,14 @@ auto DiGraph::removeNode(const Id &id) -> void
         Id nodeId = graph[*v_begin];
         idToVertex[nodeId] = *v_begin;
         vertexToId[*v_begin] = nodeId;
+    }
+}
+
+auto DiGraph::removeNodeEdges(const Id &id) -> void
+{
+    auto neighbors = getChildren(id);
+    for(const auto& neighbor : neighbors) {
+        removeEdge(id, neighbor);
     }
 }
 

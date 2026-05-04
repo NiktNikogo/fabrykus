@@ -40,6 +40,7 @@ public:
     auto getParentsWithWeights(const Id &id) const -> std::vector<std::pair<Id, float>>;
 
     auto removeNode(const Id &id) -> void;
+    auto removeNodeEdges(const Id &id) -> void;
     auto removeEdge(const Id &parent, const Id &child) -> void;
 
     auto hasNode(const Id &id) const -> bool;

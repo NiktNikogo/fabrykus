@@ -50,13 +50,13 @@ auto MergerNode::update() -> void
 
 auto MergerNode::drawInspector() -> bool
 {
-	if (formatInputIngredients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid)
-							   { this->dropIN(uid); }, {false, true, true, true, &outs}))
+	if (formatInputIngredients("Inputs:", "in", getInList(), this->getIns(), [this](uintptr_t uid)
+							   { this->dropIN(uid); }, {false, true, true, true, &getOutList()}))
 	{
 		return true;
 	}
 	if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
-							   { this->dropOUT(uid); }, {false, false, false, true, &ins}))
+							   { this->dropOUT(uid); }, {false, false, false, true, &getInList()}))
 	{
 		return true;
 	}
@@ -82,5 +82,17 @@ auto MergerNode::deserialize(nlohmann::json data) -> void
 
 const auto MergerNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
 {
-	return orange();
+	if (isReverseFlow) {
+		return std::make_shared<ImFlow::NodeStyle>(
+			IM_COL32(0, 127, 255, 255), //azure blue
+			ImColor(255, 255, 255, 255),
+			6.5f 
+		); 
+	} else {
+		return std::make_shared<ImFlow::NodeStyle>(
+			IM_COL32(204, 85, 0, 255),  //orange
+			ImColor(255, 255, 255, 255),
+			6.5f 
+		); 
+	}
 }

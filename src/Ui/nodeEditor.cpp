@@ -55,14 +55,6 @@ auto NodeEditor::draw() -> void
         }
         if (ImGui::IsKeyPressed(ImGuiKey_5))
         {
-            // auto components = digraph.getComponents();
-            // size_t i = 0;
-            // for(const auto& component : components) {
-            //     std::cout << i++ << ": " << '\n';
-            //     for(const auto& el : component) {
-            //         std::cout << el << '\n';
-            //     }
-            // }
             auto iso = digraph.getIsolatedGraphs(grid);
             std::cout << iso.size() << '\n';
         }
@@ -184,6 +176,9 @@ auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox)
     for (const auto &link : grid.getLinks())
     {
         auto locked = link.lock();
+        if(locked == nullptr) {
+            continue;
+        }
         auto leftPin = locked->left();
         auto leftNode = leftPin->getParent();
         auto left = leftNode->getUID();

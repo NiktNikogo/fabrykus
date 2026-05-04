@@ -6,15 +6,6 @@
 
 class MergerNode : public DistributorNode
 {
-private:
-	static std::shared_ptr<ImFlow::NodeStyle> orange() { 
-    return std::make_shared<ImFlow::NodeStyle>(
-        IM_COL32(204, 85, 0, 255),  
-        ImColor(255, 255, 255, 255),
-        6.5f 
-    ); 
-}
-
 public:
 	MergerNode();
 	MergerNode(size_t id);

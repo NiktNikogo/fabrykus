@@ -41,6 +41,7 @@ add_library(app_lib STATIC
     src/Util/nodeFactory.hpp
     src/Util/inspectorConfig.hpp
     src/Util/isolatedGraph.cpp
+    src/Util/savedLink.hpp
 ) 
 
 target_include_directories(app_lib PUBLIC src) 

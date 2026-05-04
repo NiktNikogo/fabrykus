@@ -3,7 +3,7 @@
 #include <ImNodeFlow.h>
 
 #include "Nodes/simpleMachineNode.hpp"
-
+#include "Util/savedLink.hpp"
 
 
 class NodeInspector {
@@ -11,12 +11,6 @@ private:
     std::weak_ptr<SimpleMachineNode> selectedNode;
     bool isShowing;
     bool isHiddenByKeys;
-    struct SavedLink {
-        size_t leftIdx;
-        size_t rightIdx;
-        SimpleMachineNode* leftNode;
-        SimpleMachineNode* rightNode;
-    };
 public:
     const float inspectorWidth = 500.0f;
     const float menuHeight = 25.0f;

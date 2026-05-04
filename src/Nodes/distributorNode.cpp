@@ -46,17 +46,17 @@ auto DistributorNode::syncPins() -> void
 
 		return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
 	};
-	for (size_t i = 0; i < ins.size(); i++)
+	for (size_t i = 0; i < getInList().size(); i++)
 	{
 		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer(
 			[this, i](ImFlow::Pin *p) {
-				if (i < ins.size()) {
+				if (i < getInList().size()) {
 					auto recived = getInVal<Ingredient>(i);
-					ImGui::Text("%s", this->ins[i].name.c_str());
+					ImGui::Text("%s", this->getInList()[i].name.c_str());
 					if(mode == Mode::MERGER) {
 						auto intake = recived.amount/totalIntake;
-						ins[i].amount = intake; 
-						ImGui::TextDisabled("I: %.2f%%", ins[i].amount);
+						getInList()[i].amount = intake; 
+						ImGui::TextDisabled("I: %.2f%%", getInList()[i].amount);
 					} else if(mode == Mode::SPLITTER) {
 						this->inAmount = recived.amount;
 						ImGui::TextDisabled("I: %.2f", inAmount);
@@ -68,27 +68,27 @@ auto DistributorNode::syncPins() -> void
 			});
 		inPins.push_back(p);
 	}
-	for (size_t i = 0; i < outs.size(); i++)
+	for (size_t i = 0; i < getOutList().size(); i++)
 	{
 
 		auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() { 
 			if(mode == Mode::MERGER) {
 				this->totalIntake = 0.0f;
-				for(size_t j = 0; j < ins.size(); j++) {
+				for(size_t j = 0; j < getInList().size(); j++) {
 					auto  ing = getInVal<Ingredient>(j);
 					totalIntake += getInVal<Ingredient>(j).amount;
 				}
-				return Ingredient{totalIntake, this->outs[i].name};
-			} else if(mode == Mode::SPLITTER){
-				return Ingredient{this->outs[i].amount * this->inAmount, this->outs[i].name}; 
+				return Ingredient{totalIntake, this->getOutList()[i].name};
+			} else {
+				return Ingredient{this->getOutList()[i].amount * this->inAmount, this->getOutList()[i].name}; 
 			} });
 
 		p->renderer([this, i](ImFlow::Pin *p)
 					{
-            if (i < outs.size()) {
-                ImGui::Text("%s", this->outs[i].name.c_str());
+            if (i < getOutList().size()) {
+                ImGui::Text("%s", this->getOutList()[i].name.c_str());
 				if(mode == Mode::MERGER) ImGui::TextDisabled("O: %.2f%%", totalIntake);
-				else if(mode == Mode::SPLITTER) ImGui::TextDisabled("O: %.2f%%", this->outs[i].amount);
+				else ImGui::TextDisabled("O: %.2f%%", this->getOutList()[i].amount);
                 p->drawSocket();
                 p->drawDecoration();
             } });

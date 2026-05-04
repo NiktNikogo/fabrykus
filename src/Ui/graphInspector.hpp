@@ -16,7 +16,8 @@ public:
 	const float menuHeight = 25.0f;
 
 private:
-	auto showCurrentGraph(ImFlow::ImNodeFlow &grid) -> void;
+	auto showCurrentGraph(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void;
+	bool isReverse = false;
 
 public:
 	GraphInspector() 
@@ -26,7 +27,7 @@ public:
 		graphs()
 	{}
 
-	const auto draw(ImFlow::ImNodeFlow& grid, bool canShow) -> void const;
+	const auto draw(ImFlow::ImNodeFlow& grid, DiGraph& graph, bool canShow) -> void const;
 	auto update(DiGraph& graph, ImFlow::ImNodeFlow& grid) -> void;
 	auto setShow(bool isShowing) -> void;
 	const auto getShow() -> bool const;

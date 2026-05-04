@@ -35,6 +35,12 @@ auto ProductNode::draw() -> void
     ImGui::Text("UID: 0x%lX", this->getUID());
     ImGui::Text("ID: %zd", this->getId());
     ImGui::PushItemWidth(100.f);
+
+    if(isReverseFlow) {
+        ImGui::Text("Time:");
+        ImGui::SameLine();
+        ImGui::InputDouble("##Time", &time);
+    }
 }
 
 auto ProductNode::update() -> void
@@ -68,12 +74,12 @@ auto ProductNode::syncPins() -> void
         return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
     };
 
-    for (size_t i = 0; i < ins.size(); i++)
+    for (size_t i = 0; i < getInList().size(); i++)
     {
         auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
                                                                                                     {
-            if (i < ins.size()) {
-                ImGui::Text("%s", this->ins[i].name.c_str());
+            if (i < getInList().size()) {
+                ImGui::Text("%s", this->getInList()[i].name.c_str());
                 ImGui::TextDisabled("I: %.2f units/s ", getInVal<Ingredient>(i).amount);
                 ImGui::SameLine();
                 p->drawSocket();
@@ -81,15 +87,40 @@ auto ProductNode::syncPins() -> void
             } });
         inPins.push_back(p);
     }
+
+    for (size_t i = 0; i < getOutList().size(); i++)
+    {
+        auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() {
+            return Ingredient{ this->getOutList()[i].amount / time, this->getOutList()[i].name };
+        });
+        
+        p->renderer([this, i](ImFlow::Pin *p) {
+            if (i < getOutList().size()) {
+                ImGui::Text("%s", this->getOutList()[i].name.c_str());
+                ImGui::TextDisabled("O: %.2f units/s ", getOutList()[i].amount/time);
+                p->drawSocket();
+                p->drawDecoration();
+            } 
+        });
+        outPins.push_back(p);
+    }
 }
 
 auto ProductNode::drawInspector() -> bool
 {
-    if (formatInputIngredients("Input:", "in", ins, this->getIns(), [this](uintptr_t uid)
-                               { this->dropIN(uid); }))
-    {
-        return true;
-    } 
+    if(!isReverseFlow) {
+        if (formatInputIngredients("Input:", "in", getInList(), this->getIns(), [this](uintptr_t uid)
+                                { this->dropIN(uid); }))
+        {
+            return true;
+        } 
+    } else {
+        if (formatInputIngredients("Output:", "out", getOutList(), this->getOuts(), [this](uintptr_t uid)
+                                { this->dropOUT(uid); }))
+        {
+            return true;
+        }
+    }
     return false;
 }
 
@@ -107,5 +138,13 @@ auto ProductNode::deserialize(nlohmann::json data) -> void
 
 const auto ProductNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle> 
 {
-	return ImFlow::NodeStyle::red();
+    if(isReverseFlow) {
+        return std::make_shared<ImFlow::NodeStyle>(
+            IM_COL32(34, 139, 34, 255),  //dark green
+            ImColor(233, 241, 244, 255),
+            6.5f
+        );
+    } else {
+	    return ImFlow::NodeStyle::red();
+    }
 }

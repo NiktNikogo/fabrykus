@@ -47,13 +47,20 @@ public:
     virtual auto drawInspector() -> bool;
     virtual auto update() -> void;
     virtual auto syncPins() -> void;
-    inline const std::vector<Ingredient> &getInList() const { return ins; }
-    inline const std::vector<Ingredient> &getOutList() const { return outs; }
+    inline const std::vector<Ingredient> &getInList() const { return isReverseFlow ? outs : ins; }
+    inline const std::vector<Ingredient> &getOutList() const { return isReverseFlow ? ins : outs; }
+    inline std::vector<Ingredient> &getInList() { return isReverseFlow ? outs : ins; }
+    inline std::vector<Ingredient> &getOutList() { return isReverseFlow ? ins : outs; }
     inline std::vector<Ingredient> &getOutListRef() { return outs; }
     inline ImFlow::Pin* getInListElement(size_t idx) const {return inPins[idx];}
     inline ImFlow::Pin* getOutListElement(size_t idx) const {return outPins[idx];}
     inline void setFlow(bool reversed) {isReverseFlow = reversed;}
     inline const size_t getId() const { return id; }
+    inline void reverseFlow() {
+        isReverseFlow = !isReverseFlow;
+        setTitle(getTitle());
+        setStyle(getColor());
+    }
     const auto print() const -> void;
     virtual const auto getNodeType() const -> NodeType {return type;};
     virtual auto serialize() -> nlohmann::json;
@@ -62,4 +69,5 @@ public:
     const auto getOutPinIndex(ImFlow::Pin *pin) const -> size_t;    
     const auto getTitle() -> std::string;
     virtual const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle>;
+
 };

@@ -46,7 +46,7 @@ const auto NodeInspector::draw(ImFlow::ImNodeFlow &grid, bool canDraw) -> void c
             {
                 auto edges = getOldEdges(node, grid);
                 node->syncPins();
-                for(auto [left, right, leftNode, rightNode] : edges) {
+                for(auto [left, right, leftNode, rightNode, weight] : edges) {
                     auto leftPin = leftNode->getOutListElement(left);
                     auto rightPin = rightNode->getInListElement(right);
                     if(leftPin && rightPin) {
@@ -112,7 +112,7 @@ auto NodeInspector::getOldEdges(std::shared_ptr<SimpleMachineNode> node, ImFlow:
                 left->getUid(),
                 right->getUid(),
                 dynamic_cast<SimpleMachineNode*>(left->getParent()),
-                 dynamic_cast<SimpleMachineNode*>(right->getParent()),
+                dynamic_cast<SimpleMachineNode*>(right->getParent()),
             };
             edges.push_back({savedLink});
         }

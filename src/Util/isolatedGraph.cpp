@@ -1,5 +1,7 @@
 #include "isolatedGraph.hpp"
 #include "Nodes/simpleMachineNode.hpp"
+#include "Util/savedLink.hpp"
+#include "Util/digraph.hpp"
 
 auto IsolatedGraph::findSources(ImFlow::ImNodeFlow &grid) -> void
 {
@@ -16,7 +18,6 @@ auto IsolatedGraph::findSources(ImFlow::ImNodeFlow &grid) -> void
 			}
 		}
 	}
-	//std::cout << nodes.size() << " " << sources.size() << " " << targets.size() << '\n';
 }
 
 auto IsolatedGraph::isProductionLine() const -> bool
@@ -52,6 +53,78 @@ auto IsolatedGraph::getBoundingBox(ImFlow::ImNodeFlow &grid) -> std::pair<ImVec2
 	}
 	
 	return {minBound, maxBound};
+}
+
+auto IsolatedGraph::reverseFlow(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void
+{
+
+	isReversed = true;
+	std::vector<SavedLink> savedLinks;
+
+	for(auto& node : nodes) {
+		for(auto& p : node->getIns()) {
+			if(p->isConnected()) {
+				auto link = p->getLink().lock();
+				if(link) {
+					auto left = link->left();
+					auto right = link->right();
+					auto leftNode = dynamic_cast<SimpleMachineNode*>(left->getParent());
+					auto rightNode =  dynamic_cast<SimpleMachineNode*>(right->getParent());
+					SavedLink savedLink{
+						leftNode->getOutPinIndex(left),
+						rightNode->getInPinIndex(right),
+						leftNode,
+						rightNode,
+						left->getPos().y - leftNode->getPos().y
+					};
+					savedLinks.push_back(savedLink);
+				}
+			}
+		}
+	}
+	for(auto& node : nodes) {
+		digraph.removeNodeEdges(node->getUID());
+	}
+	for(auto& node : nodes) {
+		node->reverseFlow();
+		node->syncPins();
+	}
+
+	std::swap(this->sources, this->targets);
+	for (const auto& savedLink : savedLinks) {
+		auto rightNode = savedLink.rightNode;
+		auto leftNode = savedLink.leftNode;
+
+		auto fromPin = 	rightNode->getOutListElement(savedLink.rightIdx);
+		auto toPin = leftNode->getInListElement(savedLink.leftIdx);
+
+		auto link = std::make_shared<ImFlow::Link>(fromPin, toPin, &grid);
+        fromPin->createLink(toPin);
+		grid.addLink(link);
+		digraph.addEdge(rightNode->getUID(), leftNode->getUID(), savedLink.weight);
+	}
+	arrangeNodes(grid, digraph);
+}
+
+auto IsolatedGraph::arrangeNodes(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void
+{
+	std::map<ImFlow::NodeUID, ImVec2> nodeSizes{};
+    for (const auto &node : nodes)
+    {
+        nodeSizes[node->getUID()] = node->getSize();
+    }
+
+    auto newPositionsOpt = digraph.calculatePositions(nodeSizes);
+
+	if (!newPositionsOpt.has_value())
+        return;
+
+    auto newPositions = *newPositionsOpt;
+    auto mousePos = grid.screen2grid(ImGui::GetMousePos());
+    for (auto &[id, node] : grid.getNodes())
+    {
+        node->setPos(newPositions[id]);
+    }
 }
 
 IsolatedGraph::IsolatedGraph()

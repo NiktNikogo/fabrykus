@@ -6,17 +6,6 @@
 
 class SplitterNode : public DistributorNode
 {
-private:
-
-    static std::shared_ptr<ImFlow::NodeStyle> purple()
-    {
-        return std::make_shared<ImFlow::NodeStyle>(
-            IM_COL32(128, 0, 128, 255), 
-            ImColor(233, 241, 244, 255),
-            6.5f
-        );
-    }
-
 public:
     SplitterNode();
     SplitterNode(size_t id);

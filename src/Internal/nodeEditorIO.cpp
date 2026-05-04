@@ -7,6 +7,7 @@
 #include "Nodes/productNode.hpp"
 #include "Util/nodeFactory.hpp"
 
+
 auto NodeEditorIO::serializeLinks(ImFlow::ImNodeFlow &grid) -> nlohmann::json
 {
     nlohmann::json jsonLinks = nlohmann::json::array();

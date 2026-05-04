@@ -35,9 +35,11 @@ auto IngredientNode::draw() -> void
     
     ImGui::PushItemWidth(100.f);
 
-    ImGui::Text("Time:");
-    ImGui::SameLine();
-    ImGui::InputDouble("##Time", &time);
+    if(!isReverseFlow) {
+        ImGui::Text("Time:");
+        ImGui::SameLine();
+        ImGui::InputDouble("##Time", &time);
+    }
 }
 
 auto IngredientNode::update() -> void
@@ -54,16 +56,43 @@ auto IngredientNode::syncPins() -> void
     inPins.clear();
     outPins.clear();
 
-    for (size_t i = 0; i < outs.size(); i++)
+    auto LabelMatchFilter = [this](ImFlow::Pin *out, ImFlow::Pin *in) -> bool
+    {
+        auto *outNode = dynamic_cast<SimpleMachineNode *>(out->getParent());
+        auto *inNode = dynamic_cast<SimpleMachineNode *>(in->getParent());
+        if (!outNode || !inNode)
+            return false;
+
+        if (out->getUid() >= outNode->getOutList().size() || in->getUid() >= inNode->getInList().size())
+            return false;
+
+        return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
+    };
+
+    for (size_t i = 0; i < getInList().size(); i++)
+    {
+        auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
+                                                                                                    {
+            if (i < getInList().size()) {
+                ImGui::Text("%s", this->getInList()[i].name.c_str());
+                ImGui::TextDisabled("I: %.2f units/s ", getInVal<Ingredient>(i).amount);
+                ImGui::SameLine();
+                p->drawSocket();
+                p->drawDecoration();
+            } });
+        inPins.push_back(p);
+    }
+
+    for (size_t i = 0; i < getOutList().size(); i++)
     {
         auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() {
-            return Ingredient{ this->outs[i].amount / time, this->outs[i].name };
+            return Ingredient{ this->getOutList()[i].amount / time, this->getOutList()[i].name };
         });
         
         p->renderer([this, i](ImFlow::Pin *p) {
-            if (i < outs.size()) {
-                ImGui::Text("%s", this->outs[i].name.c_str());
-                ImGui::TextDisabled("O: %.2f units/s ", outs[i].amount/time);
+            if (i < getOutList().size()) {
+                ImGui::Text("%s", this->getOutList()[i].name.c_str());
+                ImGui::TextDisabled("O: %.2f units/s ", getOutList()[i].amount/time);
                 p->drawSocket();
                 p->drawDecoration();
             } 
@@ -74,10 +103,18 @@ auto IngredientNode::syncPins() -> void
 
 auto IngredientNode::drawInspector() -> bool 
 {   
-    if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
-                               { this->dropOUT(uid); }))
-    {
-        return true;
+    if(!isReverseFlow) {
+        if (formatInputIngredients("Output:", "out", getOutList(), this->getOuts(), [this](uintptr_t uid)
+                                { this->dropOUT(uid); }))
+        {
+            return true;
+        }
+    } else {
+        if (formatInputIngredients("Input:", "in", getInList(), this->getIns(), [this](uintptr_t uid)
+                               { this->dropIN(uid); }))
+        {
+            return true;
+        } 
     }
     return false;
 }
@@ -97,6 +134,14 @@ auto IngredientNode::deserialize(nlohmann::json data) -> void
 }
 
 const auto IngredientNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
-{
-	return ImFlow::NodeStyle::green();
+{  
+    if(isReverseFlow) {
+        return std::make_shared<ImFlow::NodeStyle>(
+            IM_COL32(225, 100, 100, 255),  //rose
+            ImColor(233, 241, 244, 255),
+            6.5f
+        );
+    } else {
+	    return ImFlow::NodeStyle::green();
+    }
 }

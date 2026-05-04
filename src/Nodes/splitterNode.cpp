@@ -52,13 +52,13 @@ auto SplitterNode::update() -> void
 
 auto SplitterNode::drawInspector() -> bool
 {
-	if (formatInputIngredients("Inputs:", "in", ins, this->getIns(), [this](uintptr_t uid)
-							   { this->dropIN(uid); }, {false, false, false, true, &outs}))
+	if (formatInputIngredients("Inputs:", "in", getInList(), this->getIns(), [this](uintptr_t uid)
+							   { this->dropIN(uid); }, {false, false, false, true, &getOutList()}))
 	{
 		return true;
 	}
-	if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
-							   { this->dropOUT(uid); }, {true, true, true, true, &ins}))
+	if (formatInputIngredients("Output:", "out", getOutList(), this->getOuts(), [this](uintptr_t uid)
+							   { this->dropOUT(uid); }, {true, true, true, true, &getInList()}))
 	{
 		return true;
 	}
@@ -84,5 +84,17 @@ auto SplitterNode::deserialize(nlohmann::json data) -> void
 
 const auto SplitterNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
 {
-	return purple();
+	if (isReverseFlow) {
+		return std::make_shared<ImFlow::NodeStyle>(
+           	IM_COL32(218, 165, 32, 255),  //gold
+            ImColor(233, 241, 244, 255),
+            6.5f
+        );
+	} else {
+		return std::make_shared<ImFlow::NodeStyle>(
+            IM_COL32(128, 0, 128, 255),  //purple
+            ImColor(233, 241, 244, 255),
+            6.5f
+        );
+	}
 }

@@ -5,7 +5,7 @@
 #include "graphInspector.hpp"
 #include "Nodes/simpleMachineNode.hpp"
 
-auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid) -> void
+auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void
 {
 	ImGui::SameLine();
 	ImGui::Text("Inspecting Graph %d", graphIdx);
@@ -17,6 +17,12 @@ auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid) -> void
 	ImGui::Spacing();
 	ImGui::Text("Total nodes: ", nodes.size());
 
+	isReverse = false; 
+	ImGui::SameLine(ImGui::GetWindowWidth() - 200); 
+	if (ImGui::Checkbox("Reverse Flow", &currGraph.isReversed))
+	{
+		currGraph.reverseFlow(grid, digraph); 
+	}
 	if (ImGui::CollapsingHeader("Sources", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		auto sources = currGraph.getSources();
@@ -53,7 +59,7 @@ auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid) -> void
 	}
 }
 
-const auto GraphInspector::draw(ImFlow::ImNodeFlow &grid, bool canShow) -> void const
+const auto GraphInspector::draw(ImFlow::ImNodeFlow &grid, DiGraph& digraph, bool canShow) -> void const
 {
 	if (!canShow)
 		return;
@@ -79,6 +85,7 @@ const auto GraphInspector::draw(ImFlow::ImNodeFlow &grid, bool canShow) -> void 
 		}
 		else if (graphIdx == -1)
 		{
+			isReverse = false;
 			std::string preview = (graphIdx == -1) ? "Select a graph" : "Graph " + std::to_string(graphIdx);
 			if (ImGui::BeginCombo("Graphs", preview.c_str()))
 			{
@@ -108,7 +115,7 @@ const auto GraphInspector::draw(ImFlow::ImNodeFlow &grid, bool canShow) -> void 
 				ImGui::End();
 				return;
 			}
-			showCurrentGraph(grid);
+			showCurrentGraph(grid, digraph);
 		}
 	}
 	ImGui::End();

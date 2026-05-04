@@ -6,6 +6,8 @@
 #include "ImNodeFlow.h"
 #include "Nodes/simpleMachineNode.hpp"
 
+class DiGraph;
+
 class IsolatedGraph {
 private:
 	
@@ -14,6 +16,10 @@ private:
 	std::vector<std::shared_ptr<SimpleMachineNode>> sources;
 	std::vector<std::shared_ptr<SimpleMachineNode>> nodes;
 	std::vector<std::shared_ptr<SimpleMachineNode>> targets;
+public:
+	bool isReversed = false;
+private:
+	auto arrangeNodes(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void;
 public:
 	IsolatedGraph();
 	IsolatedGraph(std::vector<Id> ids);
@@ -29,4 +35,7 @@ public:
 		return targets;
 	}
 	auto getBoundingBox(ImFlow::ImNodeFlow &grid) -> std::pair<ImVec2, ImVec2>;
+	auto reverseFlow(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void;
+	auto saveEdges() -> void;
+	auto reconstructEdges() -> void;
 };
