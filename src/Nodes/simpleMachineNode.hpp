@@ -61,6 +61,9 @@ public:
         setTitle(getTitle());
         setStyle(getColor());
     }
+    inline const bool getIsReversed() {
+        return isReverseFlow;
+    }
     const auto print() const -> void;
     virtual const auto getNodeType() const -> NodeType {return type;};
     virtual auto serialize() -> nlohmann::json;

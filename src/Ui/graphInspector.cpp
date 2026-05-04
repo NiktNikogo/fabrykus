@@ -16,7 +16,10 @@ auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid, DiGraph &digraph
 
 	ImGui::Spacing();
 	ImGui::Text("Total nodes: ", nodes.size());
-
+	if(nodes.size() > 0) {
+		isReverse = nodes[0]->getIsReversed();
+		currGraph.setIsReversed(isReverse);
+	}
 	isReverse = false; 
 	ImGui::SameLine(ImGui::GetWindowWidth() - 200); 
 	if (ImGui::Checkbox("Reverse Flow", &currGraph.isReversed))

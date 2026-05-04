@@ -36,6 +36,7 @@ public:
 	}
 	auto getBoundingBox(ImFlow::ImNodeFlow &grid) -> std::pair<ImVec2, ImVec2>;
 	auto reverseFlow(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void;
-	auto saveEdges() -> void;
-	auto reconstructEdges() -> void;
+	inline void setIsReversed(bool isReversed) {
+		this->isReversed = isReversed;
+	}
 };
