@@ -403,28 +403,81 @@ auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes) -> std::
         return std::nullopt;
     }
 
-    size_t maxDepth = 0;
-    for (const auto &[id, depth] : *depths)
-    {
-        maxDepth = std::max(maxDepth, depth);
+    auto components = getComponents();
+    std::map<Id, ImVec2> relative;
+
+    for(const auto& comp : components) {
+        auto local = calculateComponentLayout(comp, nodeSizes, *depths);
+        for(auto const& [id, pos] : local) {
+            relative[id] = pos;
+        }
+     }
+    return relative;
+   
+}
+
+auto DiGraph::calculateShiftedPositions(const std::map<Id, ImVec2> &nodeSizes, const std::map<Id, ImVec2> &nodePositions) -> std::optional<std::map<Id, ImVec2>>
+{
+	auto newPositions = calculatePositions(nodeSizes);
+    if(!newPositions) return std::nullopt;
+
+    auto components = getComponents();
+    float globalY = 0.0f;
+
+    for(const auto& component : components) {
+        float minY = FLT_MAX;
+        float minX = FLT_MAX;
+       
+        float idealMinX = FLT_MAX;
+        float idealMinY = FLT_MAX;
+
+        for(auto nodeIdv : component) {
+            auto id = vertexToId.at(nodeIdv);
+            
+            auto pos = nodePositions.at(id);
+            minX = std::min(pos.x, minX);
+            minY = std::min(pos.y, minY);
+
+            auto idealPos = (*newPositions)[id];
+            idealMinX = std::min(idealPos.x, idealMinX);
+            idealMinY = std::min(idealPos.y, idealMinY);
+
+        }
+       
+
+        for(auto nodeIdv : component) {
+            auto id = vertexToId.at(nodeIdv);
+            auto& pos = (*newPositions)[id];
+            auto size = nodeSizes.at(id);
+
+            pos.x = pos.x - idealMinX + minX;
+            pos.y = pos.y - idealMinY + minY;
+
+        }
     }
 
-    std::map<size_t, std::vector<Id>> results;
-     for (const auto &[id, depth] : *depths)
-    {
-        auto parents = getParents(id);
-        results[depth].push_back(id);
+    return newPositions;
+}
+
+auto DiGraph::calculateComponentLayout(const std::vector<Vertex> &componentVertices, 
+                                        const std::map<Id, ImVec2> &nodeSizes, 
+                                        const std::unordered_map<Id, size_t> &depths) -> std::map<Id, ImVec2>
+{
+	std::map<size_t, std::vector<Id>> results;
+    for(auto nodeIdv : componentVertices) {
+        auto nodeId = vertexToId.at(nodeIdv);
+        results[depths.at(nodeId)].push_back(nodeId);
     }
-    std::map<Id, ImVec2> newPositions{};
+
+    std::map<Id, ImVec2> localPositions;
     float currentX = 0.0f;
     float columnGap = 100.0f;
     float nodeGap = 40.0f;
 
-    for (auto &[depth, elements] : results)
-    {
+    for(auto& [depth, nodes] : results) {
         if (depth > 0)
         {
-            std::sort(elements.begin(), elements.end(), [&](Id a, Id b)
+            std::sort(nodes.begin(), nodes.end(), [&](Id a, Id b)
                       {
                 auto getAvgY = [&](Id id){
                     auto parents = getParentsWithWeights(id);
@@ -433,8 +486,7 @@ auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes) -> std::
 
                     float sumY = 0.0f;
                     for(const auto& [parentId, weight] : parents){
-                        std::cout << std::format("{}, {}", parentId, weight) << '\n';
-                        sumY += newPositions[parentId].y + weight;
+                        sumY += localPositions[parentId].y + weight;
                     }
                     return sumY / parents.size();
                 };        
@@ -444,23 +496,68 @@ auto DiGraph::calculatePositions(const std::map<Id, ImVec2> &nodeSizes) -> std::
         float maxColumnWidth = 0.0f;
         float totalColumnHeight = 0.0f;
 
-        for (auto const &el : elements)
-        {
-            auto size = nodeSizes.at(el);
+        for(auto const& node : nodes) {
+            auto size = nodeSizes.at(node);
             maxColumnWidth = std::max(maxColumnWidth, size.x);
             totalColumnHeight += size.y;
         }
-        totalColumnHeight += nodeGap * (elements.size() - 1);
+        totalColumnHeight += nodeGap * (nodes.size() - 1);
 
-        float currentY = -(totalColumnHeight / 2.0f);
-        for (auto const &el : elements)
-        {
-            auto size = nodeSizes.at(el);
-            newPositions[el] = ImVec2{currentX, currentY};
+        float currentY = -totalColumnHeight / 2.0f;
+        for(auto const& node : nodes) {
+            auto size = nodeSizes.at(node);
+            localPositions[node] = ImVec2{currentX, currentY};
             currentY += size.y + nodeGap;
         }
         currentX += maxColumnWidth + columnGap;
     }
+    return localPositions;
+}
 
-    return newPositions;
+auto DiGraph::calculateStacked(const std::map<Id, ImVec2> &nodeSizes) -> std::optional<std::map<Id, ImVec2>>
+{
+    auto depths = calcNodeDepths();
+    if (!depths.has_value())
+    {
+        return std::nullopt;
+    }
+
+    std::map<Id, ImVec2> positions;
+    auto components = getComponents();
+    float globalY = 0.0f;
+
+    
+    for(const auto& component : components) {
+        auto local = calculateComponentLayout(component, nodeSizes, *depths);
+
+        float minY = FLT_MAX;
+        float minX = FLT_MAX;
+
+        for(auto nodeIdv : component) {
+            auto id = vertexToId.at(nodeIdv);
+            
+            auto pos = local[id];
+            minX = std::min(pos.x, minX);
+            minY = std::min(pos.y, minY);
+        }
+       
+        float maxHeight = 0.0f;
+        for(auto nodeIdv : component) {
+            auto id = vertexToId.at(nodeIdv);
+            auto& pos = local[id];
+            auto size = nodeSizes.at(id);
+
+            pos.x = pos.x - minX;
+            pos.y = pos.y - minY + globalY;
+
+            maxHeight = std::max(maxHeight, (pos.y - globalY) + size.y);
+        }
+
+        for(auto const& [id, pos] : local) {
+            positions[id] = pos;
+        }
+        globalY += maxHeight + 100.0f;
+    }
+
+    return positions;
 }

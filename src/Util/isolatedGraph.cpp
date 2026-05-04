@@ -109,18 +109,20 @@ auto IsolatedGraph::reverseFlow(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> v
 auto IsolatedGraph::arrangeNodes(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void
 {
 	std::map<ImFlow::NodeUID, ImVec2> nodeSizes{};
-    for (const auto &node : nodes)
+    std::map<ImFlow::NodeUID, ImVec2> nodePositions{};
+    for (const auto &[id, node] : grid.getNodes())
     {
-        nodeSizes[node->getUID()] = node->getSize();
+        nodeSizes[id] = node->getSize();
+        nodePositions[id] = node->getPos();
     }
 
-    auto newPositionsOpt = digraph.calculatePositions(nodeSizes);
+    auto newPositionsOpt = digraph.calculateShiftedPositions(nodeSizes, nodePositions);
 
 	if (!newPositionsOpt.has_value())
         return;
 
     auto newPositions = *newPositionsOpt;
-    auto mousePos = grid.screen2grid(ImGui::GetMousePos());
+    // auto mousePos = grid.screen2grid(ImGui::GetMousePos());
     for (auto &[id, node] : grid.getNodes())
     {
         node->setPos(newPositions[id]);

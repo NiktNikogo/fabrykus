@@ -55,5 +55,12 @@ public:
     auto getMaxDepth() -> std::optional<size_t>;
     auto getNodesAtDepth(size_t targetDepth) -> std::vector<Id>;
     auto printByDepth() -> void;
+
     auto calculatePositions(const std::map<Id, ImVec2> &nodeSizes) -> std::optional<std::map<Id, ImVec2>>;
+    auto calculateShiftedPositions(const std::map<Id, ImVec2> &nodeSizes, const std::map<Id, ImVec2> &nodePositions) -> std::optional<std::map<Id, ImVec2>>;
+    auto calculateComponentLayout(const std::vector<Vertex>& componentVertices,
+                                    const std::map<Id, ImVec2>& nodeSizes,
+                                    const std::unordered_map<Id, size_t>& depths) -> std::map<Id, ImVec2>;
+
+    auto calculateStacked(const std::map<Id, ImVec2> &nodeSizes) -> std::optional<std::map<Id, ImVec2>>;
 };

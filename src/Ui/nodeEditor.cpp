@@ -100,9 +100,11 @@ auto NodeEditor::draw() -> void
 
                 if (ImGui::MenuItem("Sort nodes", "Ctrl+D"))
                 {
-                    arrangeNodes();
+                    arrangeNodes(LayoutStyle::SORT);
                 }
-
+                if (ImGui::MenuItem("Organize nodes", "Ctrl+F")) {
+                    arrangeNodes(LayoutStyle::ORGANIZE);
+                }
                 ImGui::EndMenu();
             }
 
@@ -202,7 +204,7 @@ auto NodeEditor::loadFromAFile(const std::string &path) -> void
     idCounter = NodeEditorIO::load(path, grid, digraph);
 }
 
-auto NodeEditor::arrangeNodes() -> void
+auto NodeEditor::arrangeNodes(LayoutStyle style) -> void
 {
     digraph.clearEdges();
     for (const auto &link : grid.getLinks())
@@ -220,21 +222,26 @@ auto NodeEditor::arrangeNodes() -> void
     }
 
     std::map<ImFlow::NodeUID, ImVec2> nodeSizes{};
+    std::map<ImFlow::NodeUID, ImVec2> nodePositions{};
     for (const auto &[id, node] : grid.getNodes())
     {
         nodeSizes[id] = node->getSize();
+        nodePositions[id] = node->getPos();
     }
-
-    auto newPositionsOpt = digraph.calculatePositions(nodeSizes);
-
+    std::optional<std::map<DiGraph::Id, ImVec2>> newPositionsOpt{};
+    if(style == LayoutStyle::SORT) {
+        newPositionsOpt = digraph.calculateShiftedPositions(nodeSizes, nodePositions);
+    }
+    else if(style == LayoutStyle::ORGANIZE) {
+        newPositionsOpt = digraph.calculateStacked(nodeSizes);
+    }
     if (!newPositionsOpt.has_value())
         return;
 
     auto newPositions = *newPositionsOpt;
-    auto mousePos = grid.screen2grid(ImGui::GetMousePos());
     for (auto &[id, node] : grid.getNodes())
     {
-        auto newPos = newPositions[id] + ImVec2{mousePos.x, mousePos.y};
+        auto newPos = newPositions[id];
         node->setPos(newPos);
     }
 }

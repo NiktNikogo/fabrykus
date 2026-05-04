@@ -9,6 +9,13 @@
 
 class NodeEditor : public ImFlow::BaseNode
 {
+
+private: 
+    enum LayoutStyle {
+        SORT,
+        ORGANIZE
+    };
+
 private:
     size_t idCounter = 0;
     ImFlow::ImNodeFlow grid;
@@ -42,5 +49,5 @@ public:
     auto saveToFile(const std::string& path) -> void;
     auto loadFromAFile(const std::string& path) -> void;
     auto setNewId(size_t id) -> void {idCounter = id;};
-    auto arrangeNodes() -> void;
+    auto arrangeNodes(LayoutStyle style) -> void;
 };
