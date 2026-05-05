@@ -80,6 +80,13 @@ auto NodeEditor::draw() -> void
                                                     "Open project", ".json", config);
         }
 
+        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_D)) {
+            arrangeNodes(LayoutStyle::SORT);
+        }
+        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_F)) {
+            arrangeNodes(LayoutStyle::ORGANIZE);
+        }
+        
         if (ImGui::BeginPopup("NodeEditorContext"))
         {
 

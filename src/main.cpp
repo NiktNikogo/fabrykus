@@ -116,6 +116,14 @@ int main(int, char **)
                 if(!nodeInspector->getShow()) {
                     graphInspector->setHiddenByKeys(!graphInspector->getHiddenByKeys()); 
                 } })
+            .endMenu()
+            .beginMenu("Nodes")
+            .addItem("Sort nodes", "Ctrl+D", [&editor]() {
+                editor->arrangeNodes(NodeEditor::LayoutStyle::SORT);
+            })
+            .addItem("Organize nodes", "Ctrl+F", [&editor]() {
+                editor->arrangeNodes(NodeEditor::LayoutStyle::ORGANIZE);
+            })
             .endMenu();
 
         float screenW = ImGui::GetIO().DisplaySize.x;

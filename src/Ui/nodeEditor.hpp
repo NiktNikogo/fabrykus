@@ -10,7 +10,7 @@
 class NodeEditor : public ImFlow::BaseNode
 {
 
-private: 
+public: 
     enum LayoutStyle {
         SORT,
         ORGANIZE
