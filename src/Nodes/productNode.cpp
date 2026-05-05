@@ -68,17 +68,17 @@ auto ProductNode::drawInspector() -> bool
     return false;
 }
 
-auto ProductNode::deserialize(nlohmann::json data) -> void 
-{  
-    setTitle(getTitle());
-    setStyle(getColor());
+// auto ProductNode::deserialize(nlohmann::json data) -> void 
+// {  
+//     setTitle(getTitle());
+//     setStyle(getColor());
 
-    id = data["id"];
-    ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
-    setPos(pos);
-    ins = data["ins"].get<std::vector<Ingredient>>();
-    syncPins();
-}
+//     id = data["id"];
+//     ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
+//     setPos(pos);
+//     ins = data["ins"].get<std::vector<Ingredient>>();
+//     syncPins();
+// }
 
 const auto ProductNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle> 
 {

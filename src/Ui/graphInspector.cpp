@@ -40,8 +40,11 @@ auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid, DiGraph &digraph
 				const float amountWidth = 80.0f;
 				ImGui::TextDisabled("Id: %d", source->getId());
 				ImGui::PushItemWidth(amountWidth);
-
-				ImGui::InputDouble(std::format("##Amt").c_str(), &ing.amount);
+				
+				double tempVal = ing.asDouble();
+				if(ImGui::InputDouble(std::format("##Amt").c_str(), &tempVal)) {
+					ing.fromDouble(tempVal);
+				}
 				ImGui::PopItemWidth();
 				ImGui::SameLine();
 				
@@ -148,7 +151,7 @@ auto GraphInspector::setShow(bool isShowings) -> void
 
 const auto GraphInspector::getShow() -> bool const
 {
-	return this->hasGraphs;
+	return hasGraphs;
 }
 
 auto GraphInspector::setHiddenByKeys(bool isHidden) -> void
@@ -158,7 +161,7 @@ auto GraphInspector::setHiddenByKeys(bool isHidden) -> void
 
 const auto GraphInspector::getHiddenByKeys() -> bool const
 {
-	return this->isHiddenByKeys;
+	return isHiddenByKeys;
 }
 
 const auto GraphInspector::getCurrentBoundingBox(ImFlow::ImNodeFlow &grid) -> std::pair<ImVec2, ImVec2>

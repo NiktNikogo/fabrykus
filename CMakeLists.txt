@@ -9,6 +9,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED) 
 find_package(nlohmann_json CONFIG REQUIRED) 
 find_package(OpenGL REQUIRED) 
+find_package(Boost REQUIRED COMPONENTS rational)
 
 # ImNodeFlow
 add_library(imnodeflow STATIC third_party/ImNodeFlow/src/ImNodeFlow.cpp) 

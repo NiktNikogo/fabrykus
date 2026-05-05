@@ -23,24 +23,24 @@ auto TerminalNode::draw() -> void
 auto TerminalNode::syncPins() -> void
 {
 	std::vector<uintptr_t> inUids, outUids;
-	for (auto &p : this->getIns())
+	for (auto &p : getIns())
 		inUids.push_back(p->getUid());
-	for (auto &p : this->getOuts())
+	for (auto &p : getOuts())
 		outUids.push_back(p->getUid());
 	for (auto id : inUids)
-		this->dropIN(id);
+		dropIN(id);
 	for (auto id : outUids)
-		this->dropOUT(id);
+		dropOUT(id);
 	inPins.clear();
 	outPins.clear();
 
 	for (size_t i = 0; i < getInList().size(); i++)
     {
-        auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, labelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
+        auto p = addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, labelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
                                                                                                     {
             if (i < getInList().size()) {
-                ImGui::Text("%s", this->getInList()[i].name.c_str());
-                ImGui::TextDisabled("I: %.2f units/s ", getInVal<Ingredient>(i).amount);
+                ImGui::Text("%s", getInList()[i].name.c_str());
+                ImGui::TextDisabled("I: %.2f units/s ", getInVal<Ingredient>(i).asDouble());
                 ImGui::SameLine();
                 p->drawSocket();
                 p->drawDecoration();
@@ -50,14 +50,14 @@ auto TerminalNode::syncPins() -> void
 
     for (size_t i = 0; i < getOutList().size(); i++)
     {
-        auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() {
-            return Ingredient{ this->getOutList()[i].amount / time, this->getOutList()[i].name };
+        auto p = addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() {
+            return Ingredient{ getOutList()[i].asDouble() / time, getOutList()[i].name };
         });
         
         p->renderer([this, i](ImFlow::Pin *p) {
             if (i < getOutList().size()) {
-                ImGui::Text("%s", this->getOutList()[i].name.c_str());
-                ImGui::TextDisabled("O: %.2f units/s ", getOutList()[i].amount/time);
+                ImGui::Text("%s", getOutList()[i].name.c_str());
+                ImGui::TextDisabled("O: %.2f units/s ", getOutList()[i].asDouble() /time);
                 p->drawSocket();
                 p->drawDecoration();
             } 

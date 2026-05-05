@@ -23,30 +23,30 @@ auto DistributorNode::draw() -> void
 auto DistributorNode::syncPins() -> void 
 {
 	std::vector<uintptr_t> inUids, outUids;
-	for (auto &p : this->getIns())
+	for (auto &p : getIns())
 		inUids.push_back(p->getUid());
-	for (auto &p : this->getOuts())
+	for (auto &p : getOuts())
 		outUids.push_back(p->getUid());
 	for (auto id : inUids)
-		this->dropIN(id);
+		dropIN(id);
 	for (auto id : outUids)
-		this->dropOUT(id);
+		dropOUT(id);
 	inPins.clear();
 	outPins.clear();
 
 	for (size_t i = 0; i < getInList().size(); i++)
 	{
-		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, labelMatchFilter)->renderer(
+		auto p = addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, labelMatchFilter)->renderer(
 			[this, i](ImFlow::Pin *p) {
 				if (i < getInList().size()) {
 					auto recived = getInVal<Ingredient>(i);
-					ImGui::Text("%s", this->getInList()[i].name.c_str());
+					ImGui::Text("%s", getInList()[i].name.c_str());
 					if(mode == Mode::MERGER) {
-						auto intake = recived.amount/totalIntake;
-						getInList()[i].amount = intake; 
-						ImGui::TextDisabled("I: %.2f%%", getInList()[i].amount);
+						auto intake = recived.asDouble()/totalIntake;
+						getInList()[i].fromDouble(intake); 
+						ImGui::TextDisabled("I: %.2f%%", getInList()[i].asDouble());
 					} else if(mode == Mode::SPLITTER) {
-						this->inAmount = recived.amount;
+						inAmount = recived.asDouble();
 						ImGui::TextDisabled("I: %.2f", inAmount);
 					}
 					ImGui::SameLine();
@@ -59,24 +59,24 @@ auto DistributorNode::syncPins() -> void
 	for (size_t i = 0; i < getOutList().size(); i++)
 	{
 
-		auto p = this->addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() { 
+		auto p = addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() { 
 			if(mode == Mode::MERGER) {
-				this->totalIntake = 0.0f;
+				totalIntake = 0.0f;
 				for(size_t j = 0; j < getInList().size(); j++) {
 					auto  ing = getInVal<Ingredient>(j);
-					totalIntake += getInVal<Ingredient>(j).amount;
+					totalIntake += getInVal<Ingredient>(j).asDouble();
 				}
-				return Ingredient{totalIntake, this->getOutList()[i].name};
+				return Ingredient{totalIntake, getOutList()[i].name};
 			} else {
-				return Ingredient{this->getOutList()[i].amount * this->inAmount, this->getOutList()[i].name}; 
+				return Ingredient{getOutList()[i].asDouble() * inAmount, getOutList()[i].name}; 
 			} });
 
 		p->renderer([this, i](ImFlow::Pin *p)
 					{
             if (i < getOutList().size()) {
-                ImGui::Text("%s", this->getOutList()[i].name.c_str());
+                ImGui::Text("%s", getOutList()[i].name.c_str());
 				if(mode == Mode::MERGER) ImGui::TextDisabled("O: %.2f%%", totalIntake);
-				else ImGui::TextDisabled("O: %.2f%%", this->getOutList()[i].amount);
+				else ImGui::TextDisabled("O: %.2f%%", getOutList()[i].asDouble());
                 p->drawSocket();
                 p->drawDecoration();
             } });

@@ -5,3 +5,4 @@ imgui.ini
 /graf
 .vscode/
 TODO.md
+/vcpkg_installed

@@ -64,21 +64,21 @@ auto MergerNode::drawInspector() -> bool
 	return false;
 }
 
-auto MergerNode::deserialize(nlohmann::json data) -> void
-{
-    setTitle(getTitle());
-    setStyle(getColor());
+// auto MergerNode::deserialize(nlohmann::json data) -> void
+// {
+//     setTitle(getTitle());
+//     setStyle(getColor());
 
-	id = data["id"];
-	fuel = data["fuel"];
-	time = data["time"];
-	ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
-	setPos(pos);
-	ins = data["ins"].get<std::vector<Ingredient>>();
-	outs = data["outs"].get<std::vector<Ingredient>>();
-
-	syncPins();
-}
+// 	id = data["id"];
+// 	fuel = data["fuel"];
+// 	time = data["time"];
+// 	ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
+// 	setPos(pos);
+// 	ins = data["ins"].get<std::vector<Ingredient>>();
+// 	outs = data["outs"].get<std::vector<Ingredient>>();
+	
+// 	syncPins();
+// }
 
 const auto MergerNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
 {
