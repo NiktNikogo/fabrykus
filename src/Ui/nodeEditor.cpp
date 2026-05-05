@@ -182,6 +182,7 @@ auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox)
         if(locked == nullptr) {
             continue;
         }
+
         auto leftPin = locked->left();
         auto leftNode = leftPin->getParent();
         auto left = leftNode->getUID();

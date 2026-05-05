@@ -132,8 +132,11 @@ auto GraphInspector::update(DiGraph &graph, ImFlow::ImNodeFlow &grid) -> void
 	}
 	if (!isHiddenByKeys)
 	{
-		graphs = graph.getIsolatedGraphs(grid);
-
+		auto tempGraphs = graph.getIsolatedGraphs(grid);
+		if(tempGraphs.size() != graphs.size()) {
+			graphIdx = -1;
+		} 
+		graphs = tempGraphs;
 		hasGraphs = graphs.size() > 0;
 	}
 }
