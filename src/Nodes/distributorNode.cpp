@@ -44,7 +44,7 @@ auto DistributorNode::syncPins() -> void
 					if(mode == Mode::MERGER) {
 						auto intake = recived.asDouble()/totalIntake;
 						getInList()[i].fromDouble(intake); 
-						ImGui::TextDisabled("I: %.2f%%", getInList()[i].asDouble());
+						ImGui::TextDisabled("I: %.2f%%", getInList()[i].asDouble() * 100);
 					} else if(mode == Mode::SPLITTER) {
 						inAmount = recived.asDouble();
 						ImGui::TextDisabled("I: %.2f", inAmount);
@@ -76,7 +76,7 @@ auto DistributorNode::syncPins() -> void
             if (i < getOutList().size()) {
                 ImGui::Text("%s", getOutList()[i].name.c_str());
 				if(mode == Mode::MERGER) ImGui::TextDisabled("O: %.2f", totalIntake);
-				else ImGui::TextDisabled("O: %.2f%%", getOutList()[i].asDouble());
+				else ImGui::TextDisabled("O: %.2f%%", getOutList()[i].asDouble() * 100);
                 p->drawSocket();
                 p->drawDecoration();
             } });

@@ -38,7 +38,7 @@ auto SimpleMachineNode::draw() -> void
 
     ImGui::Text("UID: 0x%lX", getUID());
     ImGui::Text("ID: %zd", getId());
-    ImGui::Text("Optimal amount: %.2f", boost::rational_cast<double>(calcOptimalCount()));
+    ImGui::Text("Optimal amount: %d", boost::rational_cast<int>(calcOptimalCount()));
     ImGui::PushItemWidth(100.f);
 
     ImGui::Text("Time:");
@@ -443,13 +443,16 @@ auto SimpleMachineNode::calcOptimalCount() -> Rational
             return Rational(0);
         }
     }
+    auto rounded = (long long)std::ceil(boost::rational_cast<double>(maxCount));
+    maxCount = Rational(rounded);
+
     return maxCount;
 }
 
 auto SimpleMachineNode::calcBottleneck() -> Rational
 {
     auto count = calcOptimalCount();
-    if(count <= Rational(1)) {
+    if(count == Rational(0)) {
         count = Rational(1);
     }
     auto sat = calcSatisfation() / count;
