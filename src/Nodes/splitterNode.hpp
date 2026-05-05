@@ -13,6 +13,5 @@ public:
     auto draw() -> void override;
     auto update() -> void;
     auto drawInspector() -> bool override;
-    // auto deserialize(nlohmann::json data) -> void override;
     virtual const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle> override;
 };

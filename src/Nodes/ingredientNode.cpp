@@ -67,20 +67,6 @@ auto IngredientNode::drawInspector() -> bool
     return false;
 }
 
-// auto IngredientNode::deserialize(nlohmann::json data) -> void
-// {
-//     setTitle(getTitle());
-//     setStyle(getColor());
-
-//     id = data["id"];
-//     time = data["time"];
-//     ImVec2 pos = {data["pos"]["x"], data["pos"]["y"]};
-//     setPos(pos);
-//     outs = data["outs"].get<std::vector<Ingredient>>();
- 
-//     syncPins();
-// }
-
 const auto IngredientNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
 {  
     if(isReverseFlow) {
