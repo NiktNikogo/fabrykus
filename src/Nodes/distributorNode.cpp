@@ -75,7 +75,7 @@ auto DistributorNode::syncPins() -> void
 					{
             if (i < getOutList().size()) {
                 ImGui::Text("%s", getOutList()[i].name.c_str());
-				if(mode == Mode::MERGER) ImGui::TextDisabled("O: %.2f%%", totalIntake);
+				if(mode == Mode::MERGER) ImGui::TextDisabled("O: %.2f", totalIntake);
 				else ImGui::TextDisabled("O: %.2f%%", getOutList()[i].asDouble());
                 p->drawSocket();
                 p->drawDecoration();

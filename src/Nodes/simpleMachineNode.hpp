@@ -37,8 +37,10 @@ protected:
     auto formatInputIngredients(const char *category, const char *prefix, std::vector<Ingredient> &list,
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc,
                                 InspectorConfig config = {true, true, true, false, nullptr}) -> bool;
-    auto calcEfficiency() -> double;
-    auto calcOptimalCount() -> double;
+    auto calcEfficiency() -> Rational;
+    auto calcSatisfation() -> Rational;
+    auto calcOptimalCount() -> Rational;
+    auto calcBottleneck() -> Rational;
     static auto labelMatchFilter(ImFlow::Pin *out, ImFlow::Pin *in) -> bool;
 
 public:

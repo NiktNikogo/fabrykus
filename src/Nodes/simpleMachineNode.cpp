@@ -38,7 +38,7 @@ auto SimpleMachineNode::draw() -> void
 
     ImGui::Text("UID: 0x%lX", getUID());
     ImGui::Text("ID: %zd", getId());
-    ImGui::Text("Optimal amount: %f", calcOptimalCount());
+    ImGui::Text("Optimal amount: %.2f", boost::rational_cast<double>(calcOptimalCount()));
     ImGui::PushItemWidth(100.f);
 
     ImGui::Text("Time:");
@@ -46,14 +46,13 @@ auto SimpleMachineNode::draw() -> void
 
     ImGui::Text("Fuel:");
     ImGui::InputDouble("##Fuel", &fuel);
-
-    float eff = calcEfficiency();
-
-    ImVec4 color = eff < 1.0f ? ImVec4(1, 0.5f, 0, 1) : ImVec4(0, 1, 0, 1);
+  
+    auto eff = calcBottleneck();
+    ImVec4 color = eff < Rational(1) ? ImVec4(1, 0.5f, 0, 1) : ImVec4(0, 1, 0, 1);
     ImGui::Text("Status");
-    ImGui::TextColored(color, "%.0f%% efficency", eff * 100.0f);
+    ImGui::TextColored(color, "%.0f%% efficency", boost::rational_cast<double>(eff) * 100.0f);
 
-    if (eff < 1.0f)
+    if (eff < Rational(1))
     {
         ImGui::TextColored(ImVec4(1, 0.3f, 0.3f, 1), "Bottleneck");
     }
@@ -130,7 +129,7 @@ auto SimpleMachineNode::syncPins() -> void
                                                                                                     {
             if (i < getInList().size()) {
                 Ingredient recived = getInVal<Ingredient>(i);
-                double demand = getInList()[i].asDouble()/time * calcOptimalCount();
+                auto demand = getInList()[i].amount * calcOptimalCount() / Ingredient::makeFromDouble(time);
                 ImGui::Text("%s", getInList()[i].name.c_str());
                 ImGui::TextDisabled("R: %.2f units/s ", getInList()[i].asDouble());
                 ImGui::TextDisabled("I: %.2f units/s ", recived.asDouble());
@@ -147,12 +146,13 @@ auto SimpleMachineNode::syncPins() -> void
         auto p = addOUT_uid<Ingredient>(i, " ")
                      ->behaviour([this, i]()
                                  {
-                float eff = calcEfficiency();
-                float count = calcOptimalCount();
+                auto ratio = calcSatisfation();
+                auto count = calcOptimalCount();
+                auto througtput = ratio > count ? count : ratio;
                 Ingredient result = getOutList()[i];
-                
+                auto output = result.amount / Ingredient::makeFromDouble(time) * througtput;
                 if(time > 0) {
-                    result.fromDouble((result.asDouble()/time) * eff * count);
+                    result.amount = output;
                 } else {
                     result.amount = 0;
                 }
@@ -161,12 +161,14 @@ auto SimpleMachineNode::syncPins() -> void
         p->renderer([this, i](ImFlow::Pin *p)
                     {
             if (i < getOutList().size()) {
-                float eff = calcEfficiency();
-                float count = calcOptimalCount();
+                auto ratio = calcSatisfation();
+                auto count = calcOptimalCount();
+                auto througtput = ratio > count ? count : ratio;
                 Ingredient result = getOutList()[i];
+                auto output = result.amount / Ingredient::makeFromDouble(time) * througtput;
                 ImGui::Text("%s", getOutList()[i].name.c_str());
                 ImGui::TextDisabled("R: %.2f units/s ", result.asDouble()/time);
-                ImGui::TextDisabled("O: %.2f units/s ", (result.asDouble()/time) * eff * count);
+                ImGui::TextDisabled("O: %.2f units/s ", boost::rational_cast<double>(output));
                 p->drawSocket();
                 p->drawDecoration();
             } });
@@ -372,12 +374,12 @@ auto SimpleMachineNode::formatInputIngredients(const char *category, const char 
     return false;
 }
 
-auto SimpleMachineNode::calcEfficiency() -> double
+auto SimpleMachineNode::calcSatisfation() -> Rational
 {
-    float minSatisfaction = 1.0;
+    Rational minSatisfaction(INT_MAX, 1);
 
     if (time <= 0)
-        return 0.0f;
+        return Rational(0);
 
     auto ingredients = getInList();
     for (size_t i = 0; i < ingredients.size(); i++)
@@ -387,29 +389,37 @@ auto SimpleMachineNode::calcEfficiency() -> double
         if (recived.name == ingredients[i].name)
         {
 
-            double demand = ingredients[i].asDouble() / time;
+            auto demand = ingredients[i].amount / Ingredient::makeFromDouble(time);
 
             if (demand <= 0)
                 continue;
 
-            float satisfaction = recived.asDouble() / demand;
-            minSatisfaction = std::min(satisfaction, minSatisfaction);
+            auto satisfaction = recived.amount / demand;
+            if(minSatisfaction > satisfaction) {
+                minSatisfaction = satisfaction;
+            }
         }
         else
         {
-            return 0.0;
+            return Rational(0);
         }
     }
     return minSatisfaction;
 }
 
-auto SimpleMachineNode::calcOptimalCount() -> double
+auto SimpleMachineNode::calcEfficiency() -> Rational
+{
+    auto sat = calcSatisfation();
+	return sat < Rational(1) ? sat : Rational(1);
+}
+
+auto SimpleMachineNode::calcOptimalCount() -> Rational
 {
     auto ingredients = getInList();
     if (time <= 0 || ingredients.empty())
-        return 0.0;
+        return Rational(0);
 
-    double maxCount = 0.0;
+    Rational maxCount(0);
 
     for (size_t i = 0; i < ingredients.size(); i++)
     {
@@ -418,18 +428,30 @@ auto SimpleMachineNode::calcOptimalCount() -> double
         if (recived.name == ingredients[i].name)
         {
 
-            double demand = ingredients[i].asDouble() / time;
+            auto demand = ingredients[i].amount / Ingredient::makeFromDouble(time);
 
             if (demand <= 0)
                 continue;
 
-            double req = recived.asDouble() / demand;
-            maxCount = std::max(maxCount, req);
+            auto req = recived.amount / demand;
+            if(req > maxCount) {
+                maxCount = req;
+            }
         }
         else
         {
-            return 0.0;
+            return Rational(0);
         }
     }
     return maxCount;
+}
+
+auto SimpleMachineNode::calcBottleneck() -> Rational
+{
+    auto count = calcOptimalCount();
+    if(count <= Rational(1)) {
+        count = Rational(1);
+    }
+    auto sat = calcSatisfation() / count;
+    return sat;
 }
