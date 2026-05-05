@@ -52,12 +52,14 @@ auto NodeEditorIO::collectData(ImFlow::ImNodeFlow &grid) -> nlohmann::json
     return production;
 }
 
-auto NodeEditorIO::parseNodes(ImFlow::ImNodeFlow &grid, nlohmann::json nodes, DiGraph& digraph) -> size_t
+auto NodeEditorIO::parseNodes(ImFlow::ImNodeFlow &grid, nlohmann::json nodes, DiGraph& digraph, size_t maxCurrId) -> size_t
 {
-   size_t biggestId = 0;
+    size_t biggestId = 0;
     for (auto data : nodes)
     {
         size_t id = data["id"];
+        id += maxCurrId;
+        data["id"] = id;
         biggestId = biggestId > id ? biggestId : id;
         NodeType type = data["type"].get<NodeType>();
         switch (type)
@@ -77,7 +79,7 @@ auto NodeEditorIO::parseNodes(ImFlow::ImNodeFlow &grid, nlohmann::json nodes, Di
     return biggestId;
 }
 
-auto NodeEditorIO::parseLinks(ImFlow::ImNodeFlow &grid, nlohmann::json links, DiGraph& digraph) -> void
+auto NodeEditorIO::parseLinks(ImFlow::ImNodeFlow &grid, nlohmann::json links, DiGraph& digraph, size_t maxCurrId) -> void
 {
     auto nodes = grid.getNodes();
     std::unordered_map<int, std::shared_ptr<SimpleMachineNode>> nodeMap;
@@ -88,8 +90,10 @@ auto NodeEditorIO::parseLinks(ImFlow::ImNodeFlow &grid, nlohmann::json links, Di
 
     for(auto data : links) {
         size_t fromNodeId = data["from_node_id"];
+        fromNodeId += maxCurrId;
         size_t fromPinIdx = data["from_pin_idx"];
         size_t toNodeId = data["to_node_id"];
+        toNodeId += maxCurrId;
         size_t toPinIdx = data["to_pin_idx"];
 
         auto fromNode = nodeMap[fromNodeId];
@@ -115,14 +119,11 @@ auto NodeEditorIO::save(const std::string &path, ImFlow::ImNodeFlow &grid) -> vo
     }
 }
 
-auto NodeEditorIO::load(const std::string &path, ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> size_t
+auto NodeEditorIO::load(const std::string &path, ImFlow::ImNodeFlow &grid, DiGraph &digraph, size_t maxCurrId) -> size_t
 {
     std::ifstream file(path);
     nlohmann::json production = nlohmann::json::parse(file);
-    size_t newMaxId = parseNodes(grid, production["nodes"], digraph);
-    parseLinks(grid, production["links"], digraph);
-
-    digraph.getIsolatedGraphs(grid);
-
+    size_t newMaxId = parseNodes(grid, production["nodes"], digraph, maxCurrId);
+    parseLinks(grid, production["links"], digraph, maxCurrId);
     return newMaxId;
 }

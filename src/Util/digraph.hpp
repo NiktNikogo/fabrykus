@@ -49,6 +49,8 @@ public:
     auto printGraph() -> void;
 
     auto clearEdges() -> void;
+    auto clearNodes() -> void;
+
     auto topologicalSort() const -> std::optional<std::vector<Id>>;
     auto printTopologicalSort() const -> void;
     auto calcNodeDepths() -> std::optional<std::unordered_map<Id, size_t>>;

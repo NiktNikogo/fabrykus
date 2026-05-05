@@ -105,6 +105,11 @@ int main(int, char **)
                     config.path = ".";
                     ImGuiFileDialog::Instance()->OpenDialog("OpenProjectKey", 
                         "Open project", ".json", config); })
+            .addItem("Add", "Ctrl+A", [&editor]() {
+                    IGFD::FileDialogConfig config;
+                    config.path = ".";
+                    ImGuiFileDialog::Instance()->OpenDialog("AddProjectKey",
+                        "Add project", ".json", config); })
             .addItem("Exit", "", {})
             .endMenu()
             .beginMenu("Windows")

@@ -239,6 +239,13 @@ auto DiGraph::clearEdges() -> void
     }
 }
 
+auto DiGraph::clearNodes() -> void
+{
+    graph.clear();
+    vertexToId.clear();
+    idToVertex.clear();
+}
+
 auto DiGraph::topologicalSort() const -> std::optional<std::vector<Id>>
 {
     if (idToVertex.size() < 1)

@@ -79,6 +79,12 @@ auto NodeEditor::draw() -> void
             ImGuiFileDialog::Instance()->OpenDialog("OpenProjectKey",
                                                     "Open project", ".json", config);
         }
+        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_A)) {
+            IGFD::FileDialogConfig config;
+            config.path = ".";
+            ImGuiFileDialog::Instance()->OpenDialog("AddProjectKey",
+                                                    "Add project", ".json", config);
+        }
 
         if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_D)) {
             arrangeNodes(LayoutStyle::SORT);
@@ -161,6 +167,22 @@ auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox)
     {
         if (ImGuiFileDialog::Instance()->IsOk())
         {
+            digraph.clearEdges();
+            digraph.clearNodes();
+            std::vector<DiGraph::Id> ids;
+            for(const auto& node : grid.getNodes()) {
+                ids.push_back(node.second->getUID());
+            }
+            for(auto id : ids) {
+                grid.getNodes().at(id)->destroy();
+            }
+            std::string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
+            loadFromAFile(filePath);
+        }
+        ImGuiFileDialog::Instance()->Close();
+    }
+    if(ImGuiFileDialog::Instance()->Display("AddProjectKey")) {
+        if(ImGuiFileDialog::Instance()->IsOk()) {
             std::string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
             loadFromAFile(filePath);
         }
@@ -210,7 +232,7 @@ auto NodeEditor::saveToFile(const std::string &path) -> void
 
 auto NodeEditor::loadFromAFile(const std::string &path) -> void
 {
-    idCounter = NodeEditorIO::load(path, grid, digraph);
+    idCounter = NodeEditorIO::load(path, grid, digraph, idCounter);
 }
 
 auto NodeEditor::arrangeNodes(LayoutStyle style) -> void
