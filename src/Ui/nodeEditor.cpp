@@ -170,6 +170,7 @@ auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox)
     {
         if (aliveIds.find(dataId) == aliveIds.end())
         {
+            digraph.removeNodeEdges(dataId);
             digraph.removeNode(dataId);
         }
     }

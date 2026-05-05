@@ -21,6 +21,7 @@ protected:
     std::vector<ImFlow::Pin *> outPins;
     bool isReverseFlow = false;
 
+    
 public:
     enum Flow {
         FORWARD,
@@ -31,12 +32,14 @@ public:
     static const size_t TEXT_INPUT_MAX_LENGTH = 128;
     NodeType type = NodeType::MACHINE;
     Flow flow;
+    
 protected:
     auto formatInputIngredients(const char *category, const char *prefix, std::vector<Ingredient> &list,
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc,
                                 InspectorConfig config = {true, true, true, false, nullptr}) -> bool;
     auto calcEfficiency() -> double;
     auto calcOptimalCount() -> double;
+    static auto labelMatchFilter(ImFlow::Pin *out, ImFlow::Pin *in) -> bool;
 
 public:
     SimpleMachineNode();

@@ -124,22 +124,9 @@ auto SimpleMachineNode::syncPins() -> void
     inPins.clear();
     outPins.clear();
     
-    auto LabelMatchFilter = [this](ImFlow::Pin *out, ImFlow::Pin *in) -> bool
-    {
-        auto *outNode = dynamic_cast<SimpleMachineNode *>(out->getParent());
-        auto *inNode = dynamic_cast<SimpleMachineNode *>(in->getParent());
-        if (!outNode || !inNode)
-            return false;
-
-        if (out->getUid() >= outNode->getOutList().size() || in->getUid() >= inNode->getInList().size())
-            return false;
-
-        return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
-    };
-
     for (size_t i = 0; i < getInList().size(); i++)
     {
-        auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
+        auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, labelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
                                                                                                     {
             if (i < getInList().size()) {
                 Ingredient recived = getInVal<Ingredient>(i);
@@ -276,10 +263,28 @@ const auto SimpleMachineNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
     }
 }
 
+auto SimpleMachineNode::labelMatchFilter(ImFlow::Pin *out, ImFlow::Pin *in) -> bool
+{
+	 {
+        auto *outNode = dynamic_cast<SimpleMachineNode *>(out->getParent());
+        auto *inNode = dynamic_cast<SimpleMachineNode *>(in->getParent());
+        if (!outNode || !inNode)
+            return false;
+        if(inNode->getIsReversed() != outNode->getIsReversed()) {
+            return false;
+        }
+        
+        if (out->getUid() >= outNode->getOutList().size() || in->getUid() >= inNode->getInList().size())
+            return false;
+        
+        return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
+    };
+}
+
 auto SimpleMachineNode::formatInputIngredients(const char *category, const char *prefix,
-                                               std::vector<Ingredient> &list,
-                                               const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc,
-                                               InspectorConfig config) -> bool
+											   std::vector<Ingredient> &list,
+											   const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc,
+											   InspectorConfig config) -> bool
 {
 
     auto totalWidth = ImGui::GetContentRegionAvail().x;

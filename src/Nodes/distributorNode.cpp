@@ -34,21 +34,9 @@ auto DistributorNode::syncPins() -> void
 	inPins.clear();
 	outPins.clear();
 
-	auto LabelMatchFilter = [this](ImFlow::Pin *out, ImFlow::Pin *in) -> bool
-	{
-		auto *outNode = dynamic_cast<SimpleMachineNode *>(out->getParent());
-		auto *inNode = dynamic_cast<SimpleMachineNode *>(in->getParent());
-		if (!outNode || !inNode)
-			return false;
-
-		if (out->getUid() >= outNode->getOutList().size() || in->getUid() >= inNode->getInList().size())
-			return false;
-
-		return outNode->getOutList()[out->getUid()].name == inNode->getInList()[in->getUid()].name;
-	};
 	for (size_t i = 0; i < getInList().size(); i++)
 	{
-		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, LabelMatchFilter)->renderer(
+		auto p = this->addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, labelMatchFilter)->renderer(
 			[this, i](ImFlow::Pin *p) {
 				if (i < getInList().size()) {
 					auto recived = getInVal<Ingredient>(i);
