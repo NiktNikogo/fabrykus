@@ -10,4 +10,6 @@ struct InspectorConfig {
 	bool allowDeleting = true;
 	bool sameName = false;
 	std::vector<Ingredient>* keeps = nullptr;
+	bool capInputValues = false;
+	Rational cappedValue = Rational(LLONG_MAX, 1);	
 };

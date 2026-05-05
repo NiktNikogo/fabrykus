@@ -51,7 +51,7 @@ auto MergerNode::update() -> void
 auto MergerNode::drawInspector() -> bool
 {
 	if (formatInputIngredients("Inputs:", "in", getInList(), this->getIns(), [this](uintptr_t uid)
-							   { this->dropIN(uid); }, {false, true, true, true, &getOutList()}))
+							   { this->dropIN(uid); }, {false, true, true, true, &getOutList(), true, Rational(1,1) }))
 	{
 		return true;
 	}

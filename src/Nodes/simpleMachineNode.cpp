@@ -307,13 +307,18 @@ auto SimpleMachineNode::formatInputIngredients(const char *category, const char 
             return true;
         }
     }
-
+    Rational currAmount = Rational(0, 1);
+    for(const auto& ing : list) {
+        currAmount += ing.amount;
+    }
+    if(config.capInputValues && currAmount != config.cappedValue) {
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),"Input values don't sum up to %.2f", boost::rational_cast<double>(config.cappedValue));
+    }
     for (auto i = 0; i < list.size(); i++)
     {
         ImGui::PushID(i);
         ImGui::Text("%d:", i);
         ImGui::SameLine();
-
         if (config.showAmmount)
         {
             double tempVal = list[i].asDouble();
@@ -324,7 +329,6 @@ auto SimpleMachineNode::formatInputIngredients(const char *category, const char 
             ImGui::PopItemWidth();
             ImGui::SameLine();
         }
-
         ImGui::PushItemWidth(nameWidth);
         char buffer[SimpleMachineNode::TEXT_INPUT_MAX_LENGTH]{};
         snprintf(buffer, sizeof(buffer), "%s", list[i].name.c_str());

@@ -58,7 +58,7 @@ auto SplitterNode::drawInspector() -> bool
 		return true;
 	}
 	if (formatInputIngredients("Output:", "out", getOutList(), this->getOuts(), [this](uintptr_t uid)
-							   { this->dropOUT(uid); }, {true, true, true, true, &getInList()}))
+							   { this->dropOUT(uid); }, {true, true, true, true, &getInList(), true, Rational(1,1)}))
 	{
 		return true;
 	}
