@@ -202,16 +202,14 @@ auto GraphInspector::update(DiGraph &graph, ImFlow::ImNodeFlow &grid) -> void
 	{
 		isHiddenByKeys = !isHiddenByKeys;
 	}
-	if (!isHiddenByKeys)
+	auto tempGraphs = graph.getIsolatedGraphs(grid);
+	if (tempGraphs.size() != graphs.size())
 	{
-		auto tempGraphs = graph.getIsolatedGraphs(grid);
-		if (tempGraphs.size() != graphs.size())
-		{
-			graphIdx = -1;
-		}
-		graphs = tempGraphs;
-		hasGraphs = graphs.size() > 0;
+		graphIdx = -1;
 	}
+	graphs = tempGraphs;
+	hasGraphs = graphs.size() > 0;
+	
 }
 
 auto GraphInspector::setShow(bool isShowings) -> void
