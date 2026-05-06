@@ -17,7 +17,6 @@ public:
 
 private:
 	auto showCurrentGraph(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void;
-	bool isReverse = false;
 
 public:
 	GraphInspector() 

@@ -18,4 +18,5 @@ public:
     TerminalNode(size_t id, double time, std::vector<Ingredient> outs);
     auto draw() -> void override;
     auto syncPins() -> void;
+
  };

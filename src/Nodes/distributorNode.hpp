@@ -21,6 +21,7 @@ public:
     DistributorNode();
     DistributorNode(size_t id);
     DistributorNode(size_t id, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
+    virtual auto drawInspector() -> bool;
     virtual auto draw() -> void override;
     virtual auto syncPins() -> void override;
 };

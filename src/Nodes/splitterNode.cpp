@@ -33,6 +33,8 @@ SplitterNode::SplitterNode(size_t id, std::vector<Ingredient> ins, std::vector<I
     setTitle(getTitle());
     setStyle(getColor());
 
+	inAmount = 0.0;
+    totalIntake = 0.0;
 	syncPins();
 }
 
@@ -41,29 +43,23 @@ auto SplitterNode::draw() -> void
 	ImGui::Text("UID: 0x%lX", this->getUID());
 	ImGui::Text("ID: %zd", this->getId());
 	ImGui::PushItemWidth(100.f);
-}
 
-auto SplitterNode::update() -> void
-{
-	ImGui::Text("UID: 0x%lX", this->getUID());
-	ImGui::Text("ID: %zd", this->getId());
-	ImGui::PushItemWidth(100.f);
-}
 
-auto SplitterNode::drawInspector() -> bool
-{
-	if (formatInputIngredients("Inputs:", "in", getInList(), this->getIns(), [this](uintptr_t uid)
-							   { this->dropIN(uid); }, {false, false, false, true, &getOutList()}))
-	{
-		return true;
+	bool isMerging = (mode == Mode::MERGER && !isReverseFlow) || (mode == Mode::SPLITTER && isReverseFlow);
+	bool isSplitting = !isMerging;
+
+	float currentTotal = 0.0f;
+	for (size_t j = 0; j < getInList().size(); j++) {
+		currentTotal += getInVal<Ingredient>(j).asDouble();
 	}
-	if (formatInputIngredients("Output:", "out", getOutList(), this->getOuts(), [this](uintptr_t uid)
-							   { this->dropOUT(uid); }, {true, true, true, true, &getInList(), true, Rational(1,1)}))
-	{
-		return true;
+	totalIntake = currentTotal;
+
+	if (isSplitting && !getInList().empty()) {
+		inAmount = getInVal<Ingredient>(0).asDouble();
 	}
 
-	return false;
+
+	update();
 }
 
 const auto SplitterNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>

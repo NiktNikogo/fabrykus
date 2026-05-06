@@ -14,48 +14,53 @@ auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid, DiGraph &digraph
 	auto currGraph = graphs[graphIdx];
 	auto nodes = currGraph.getNodes();
 
+	std::map<std::string, Rational> inputMap;
+
 	ImGui::Spacing();
-	ImGui::Text("Total nodes: ", nodes.size());
-	if(nodes.size() > 0) {
-		isReverse = nodes[0]->getIsReversed();
-		currGraph.setIsReversed(isReverse);
+	ImGui::Text("Total nodes %zu: ", nodes.size());
+	if (nodes.size() > 0)
+	{
+		currGraph.setIsReversed(nodes[0]->getIsReversed());
 	}
-	isReverse = false; 
-	ImGui::SameLine(ImGui::GetWindowWidth() - 200); 
+	ImGui::SameLine(ImGui::GetWindowWidth() - 200);
 	if (ImGui::Checkbox("Reverse Flow", &currGraph.isReversed))
 	{
-		currGraph.reverseFlow(grid, digraph); 
+		currGraph.reverseFlow(grid, digraph);
 	}
-	if (ImGui::CollapsingHeader("Sources", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::CollapsingHeader("Input summary", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		auto sources = currGraph.getSources();
 		for (auto &source : sources)
 		{
 			ImGui::PushID(source->getId());
 			size_t i = 0;
-			for (auto &ing : source->getOutListRef())
+			for (auto &ing : source->getOutList())
 			{
+				inputMap[ing.name] += ing.amount;
+
 				ImGui::PushID(i++);
-				
+
 				const float amountWidth = 80.0f;
-				ImGui::TextDisabled("Id: %d", source->getId());
+				ImGui::Text("Id: %zu", source->getId());
 				ImGui::PushItemWidth(amountWidth);
-				
+
 				double tempVal = ing.asDouble();
-				if(ImGui::InputDouble(std::format("##Amt").c_str(), &tempVal)) {
+				if (ImGui::InputDouble(std::format("##Amt").c_str(), &tempVal))
+				{
 					ing.fromDouble(tempVal);
 				}
 				ImGui::PopItemWidth();
 				ImGui::SameLine();
-				
+
 				const float nameWidth = 150.0f;
 				ImGui::PushItemWidth(nameWidth);
 				char buffer[SimpleMachineNode::TEXT_INPUT_MAX_LENGTH]{};
-        		snprintf(buffer, sizeof(buffer), "%s", ing.name.c_str());
-        		if (ImGui::InputText(std::format("##Name").c_str(), buffer, sizeof(buffer))) {
+				snprintf(buffer, sizeof(buffer), "%s", ing.name.c_str());
+				if (ImGui::InputText(std::format("##Name").c_str(), buffer, sizeof(buffer)))
+				{
 					ing.name = buffer;
 				}
-       
+
 				ImGui::PopItemWidth();
 
 				ImGui::PopID();
@@ -63,9 +68,74 @@ auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid, DiGraph &digraph
 			ImGui::PopID();
 		}
 	}
+	if (ImGui::CollapsingHeader("Machines", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		auto machines = currGraph.getMachines();
+		size_t i = 0;
+		for (const auto &machine : machines)
+		{
+			auto count = boost::rational_cast<size_t>(machine->calcOptimalCount());
+			auto bottleneck = boost::rational_cast<double>(machine->calcBottleneck());
+			ImGui::PushID(i++);
+			ImGui::Text("Machine %zu: used: %zu |", machine->getId(), count);
+			ImGui::SameLine();
+
+			ImVec4 color;
+			if (bottleneck > 0.75f)
+			{
+				color = {0.0f, 1.0f, 0.0f, 1.0f};
+			}
+			else if (bottleneck < 0.75f && bottleneck > 0.5f)
+			{
+				color = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
+			}
+			else
+			{
+				color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+			}
+			ImGui::TextColored(color, "bottleneck: %.2f", bottleneck * 100);
+			ImGui::PopID();
+		}
+	}
+	if (ImGui::CollapsingHeader("Output summary", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		std::map<std::string, Rational> outputMap;
+		for (const auto &target : currGraph.getTargets())
+		{
+			for (const auto &ing : target->getInList())
+			{
+				outputMap[ing.name] += ing.amount;
+			}
+		}
+		ImGui::Text("Producing: ");
+		for (const auto &[name, amount] : outputMap)
+		{
+			ImGui::Text("%s: %.2f u/s", name.c_str(), boost::rational_cast<double>(amount));
+		}
+		ImGui::Text("Relationships: ");
+		for (const auto &[outName, outAmount] : outputMap)
+		{
+			for (const auto &[inName, inAmount] : inputMap)
+			{
+				if (ImGui::TreeNode(outName.c_str()))
+				{
+					for (const auto &[inName, inAmount] : inputMap)
+					{
+						auto ratio = Rational(0);
+						if (inAmount != Rational(0))
+						{
+							ratio = outAmount / inAmount;
+						}
+						ImGui::Text("Ratio %lld : %lld | %s:%s", ratio.numerator(), ratio.denominator(), outName.c_str(), inName.c_str());
+					}
+					ImGui::TreePop();
+				}
+			}
+		}
+	}
 }
 
-const auto GraphInspector::draw(ImFlow::ImNodeFlow &grid, DiGraph& digraph, bool canShow) -> void const
+const auto GraphInspector::draw(ImFlow::ImNodeFlow &grid, DiGraph &digraph, bool canShow) -> void const
 {
 	if (!canShow)
 		return;
@@ -91,7 +161,6 @@ const auto GraphInspector::draw(ImFlow::ImNodeFlow &grid, DiGraph& digraph, bool
 		}
 		else if (graphIdx == -1)
 		{
-			isReverse = false;
 			std::string preview = (graphIdx == -1) ? "Select a graph" : "Graph " + std::to_string(graphIdx);
 			if (ImGui::BeginCombo("Graphs", preview.c_str()))
 			{
@@ -136,9 +205,10 @@ auto GraphInspector::update(DiGraph &graph, ImFlow::ImNodeFlow &grid) -> void
 	if (!isHiddenByKeys)
 	{
 		auto tempGraphs = graph.getIsolatedGraphs(grid);
-		if(tempGraphs.size() != graphs.size()) {
+		if (tempGraphs.size() != graphs.size())
+		{
 			graphIdx = -1;
-		} 
+		}
 		graphs = tempGraphs;
 		hasGraphs = graphs.size() > 0;
 	}

@@ -78,8 +78,8 @@ auto SimpleMachineNode::drawInspector() -> bool
 
 auto SimpleMachineNode::update() -> void
 {
-    for (size_t i = 0; i < ins.size(); i++)
-    {
+    for (size_t i = 0; i < getInList().size(); i++)
+    {   
         auto p = inPin(i);
         if (!p)
             continue;
@@ -129,11 +129,12 @@ auto SimpleMachineNode::syncPins() -> void
                                                                                                     {
             if (i < getInList().size()) {
                 Ingredient recived = getInVal<Ingredient>(i);
-                auto demand = getInList()[i].amount * calcOptimalCount() / Ingredient::makeFromDouble(time);
+                auto count = calcOptimalCount();
+                auto demand = getInList()[i].amount * count / Ingredient::makeFromDouble(time);
                 ImGui::Text("%s", getInList()[i].name.c_str());
                 ImGui::TextDisabled("R: %.2f units/s ", getInList()[i].asDouble());
                 ImGui::TextDisabled("I: %.2f units/s ", recived.asDouble());
-
+                ImGui::TextDisabled("T: %.2f units/s ", boost::rational_cast<double>(getInList()[i].amount * count));
                 ImGui::SameLine();
                 p->drawSocket();
                 p->drawDecoration();
@@ -169,11 +170,22 @@ auto SimpleMachineNode::syncPins() -> void
                 ImGui::Text("%s", getOutList()[i].name.c_str());
                 ImGui::TextDisabled("R: %.2f units/s ", result.asDouble()/time);
                 ImGui::TextDisabled("O: %.2f units/s ", boost::rational_cast<double>(output));
+                ImGui::TextDisabled("T: %.2f units/s ", boost::rational_cast<double>(getOutList()[i].amount * count));
                 p->drawSocket();
                 p->drawDecoration();
             } });
 
         outPins.push_back(p);
+    }
+}
+
+auto SimpleMachineNode::reverseFlow() -> void
+{
+    isReverseFlow = !isReverseFlow;
+    setTitle(getTitle());
+    setStyle(getColor());
+    if(time == 0.0f) {
+        time = 1;
     }
 }
 
@@ -268,6 +280,15 @@ const auto SimpleMachineNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
     } else {
 	    return ImFlow::NodeStyle::cyan();
     }
+}
+
+const auto SimpleMachineNode::updateRecived() -> void
+{
+	// recived.clear();
+    // for (size_t i = 0; i < getInList().size(); i++) {
+    //     auto temp = getInVal<Ingredient>(i);
+    //     recived.push_back(getInVal<Ingredient>(i));
+    // }
 }
 
 auto SimpleMachineNode::labelMatchFilter(ImFlow::Pin *out, ImFlow::Pin *in) -> bool
@@ -388,8 +409,12 @@ auto SimpleMachineNode::calcSatisfation() -> Rational
 
         if (recived.name == ingredients[i].name)
         {
-
-            auto demand = ingredients[i].amount / Ingredient::makeFromDouble(time);
+            auto demand = ingredients[i].amount;
+            if(time == 0.0f) {
+                demand = Rational(0);
+            } else {
+               demand /= Ingredient::makeFromDouble(time);
+            }
 
             if (demand <= 0)
                 continue;
@@ -452,9 +477,10 @@ auto SimpleMachineNode::calcOptimalCount() -> Rational
 auto SimpleMachineNode::calcBottleneck() -> Rational
 {
     auto count = calcOptimalCount();
-    if(count == Rational(0)) {
+    auto sat = calcSatisfation();
+    if(count == Rational(0) || sat == Rational(0)) {
         count = Rational(1);
     }
-    auto sat = calcSatisfation() / count;
+    sat = sat / count;
     return sat;
 }

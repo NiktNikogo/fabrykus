@@ -93,7 +93,7 @@ auto DiGraph::getIsolatedGraphs(ImFlow::ImNodeFlow &grid) -> std::vector<Isolate
             ids.push_back(vertexToId.at(el));
         }
         IsolatedGraph isoGraph(ids);
-        isoGraph.findSources(grid);
+        isoGraph.groupNodes(grid);
         if(isoGraph.isProductionLine()) {
             isoGraphs.push_back(IsolatedGraph(isoGraph));
         }

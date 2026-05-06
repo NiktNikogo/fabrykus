@@ -21,9 +21,9 @@ protected:
     std::vector<ImFlow::Pin *> outPins;
     bool isReverseFlow = false;
 
-    
 public:
-    enum Flow {
+    enum Flow
+    {
         FORWARD,
         REVERSE
     };
@@ -32,15 +32,13 @@ public:
     static const size_t TEXT_INPUT_MAX_LENGTH = 128;
     NodeType type = NodeType::MACHINE;
     Flow flow;
-    
+
 protected:
     auto formatInputIngredients(const char *category, const char *prefix, std::vector<Ingredient> &list,
                                 const std::vector<std::shared_ptr<ImFlow::Pin>> &pins, std::function<void(uintptr_t)> dropFunc,
                                 InspectorConfig config = {true, true, true, false, nullptr}) -> bool;
     auto calcEfficiency() -> Rational;
     auto calcSatisfation() -> Rational;
-    auto calcOptimalCount() -> Rational;
-    auto calcBottleneck() -> Rational;
     static auto labelMatchFilter(ImFlow::Pin *out, ImFlow::Pin *in) -> bool;
 
 public:
@@ -52,30 +50,36 @@ public:
     virtual auto drawInspector() -> bool;
     virtual auto update() -> void;
     virtual auto syncPins() -> void;
+
     inline const std::vector<Ingredient> &getInList() const { return isReverseFlow ? outs : ins; }
     inline const std::vector<Ingredient> &getOutList() const { return isReverseFlow ? ins : outs; }
     inline std::vector<Ingredient> &getInList() { return isReverseFlow ? outs : ins; }
     inline std::vector<Ingredient> &getOutList() { return isReverseFlow ? ins : outs; }
+    inline std::vector<Ingredient> &getInListRef() { return ins; }
     inline std::vector<Ingredient> &getOutListRef() { return outs; }
-    inline ImFlow::Pin* getInListElement(size_t idx) const {return inPins[idx];}
-    inline ImFlow::Pin* getOutListElement(size_t idx) const {return outPins[idx];}
-    inline void setFlow(bool reversed) {isReverseFlow = reversed;}
+
+    inline ImFlow::Pin *getInListElement(size_t idx) const { return inPins[idx]; }
+    inline ImFlow::Pin *getOutListElement(size_t idx) const { return outPins[idx]; }
+    inline void setFlow(bool reversed) { isReverseFlow = reversed; }
     inline const size_t getId() const { return id; }
-    inline void reverseFlow() {
-        isReverseFlow = !isReverseFlow;
-        setTitle(getTitle());
-        setStyle(getColor());
-    }
-    inline const bool getIsReversed() {
+
+    virtual auto reverseFlow() -> void;
+    inline const bool getIsReversed()
+    {
         return isReverseFlow;
     }
+
     const auto print() const -> void;
-    virtual const auto getNodeType() const -> NodeType {return type;};
+    virtual const auto getNodeType() const -> NodeType { return type; };
     virtual auto serialize() -> nlohmann::json;
     virtual auto deserialize(nlohmann::json data) -> void;
     const auto getInPinIndex(ImFlow::Pin *pin) const -> size_t;
-    const auto getOutPinIndex(ImFlow::Pin *pin) const -> size_t;    
+    const auto getOutPinIndex(ImFlow::Pin *pin) const -> size_t;
     const auto getTitle() -> std::string;
     virtual const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle>;
+    const auto updateRecived() -> void;
 
+
+    auto calcOptimalCount() -> Rational;
+    auto calcBottleneck() -> Rational;
 };

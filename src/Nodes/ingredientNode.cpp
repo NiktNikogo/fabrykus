@@ -43,10 +43,8 @@ auto IngredientNode::draw() -> void
         ImGui::SameLine();
         ImGui::InputDouble("##Time", &time);
     }
-}
 
-auto IngredientNode::update() -> void
-{
+    update();
 }
 
 auto IngredientNode::drawInspector() -> bool 
@@ -71,7 +69,7 @@ const auto IngredientNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
 {  
     if(isReverseFlow) {
         return std::make_shared<ImFlow::NodeStyle>(
-            IM_COL32(225, 100, 100, 255),  //rose
+            IM_COL32(34, 139, 34, 255),  //dark green
             ImColor(233, 241, 244, 255),
             6.5f
         );

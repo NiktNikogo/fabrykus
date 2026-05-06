@@ -11,7 +11,6 @@ public:
     SplitterNode(size_t id);
     SplitterNode(size_t id, std::vector<Ingredient> ins, std::vector<Ingredient> outs);
     auto draw() -> void override;
-    auto update() -> void;
-    auto drawInspector() -> bool override;
+    //auto drawInspector() -> bool override;
     virtual const auto getColor() -> std::shared_ptr<ImFlow::NodeStyle> override;
 };

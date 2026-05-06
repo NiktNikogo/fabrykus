@@ -44,17 +44,17 @@ auto ProductNode::draw() -> void
         ImGui::SameLine();
         ImGui::InputDouble("##Time", &time);
     }
+
+
+    update();
 }
 
-auto ProductNode::update() -> void
-{
-}
 
 auto ProductNode::drawInspector() -> bool
 {
     if(!isReverseFlow) {
         if (formatInputIngredients("Input:", "in", getInList(), this->getIns(), [this](uintptr_t uid)
-                                { this->dropIN(uid); }))
+                                { this->dropIN(uid); }, {false}))
         {
             return true;
         } 
@@ -72,7 +72,7 @@ const auto ProductNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>
 {
     if(isReverseFlow) {
         return std::make_shared<ImFlow::NodeStyle>(
-            IM_COL32(34, 139, 34, 255),  //dark green
+             IM_COL32(225, 100, 100, 255),  //rose
             ImColor(233, 241, 244, 255),
             6.5f
         );

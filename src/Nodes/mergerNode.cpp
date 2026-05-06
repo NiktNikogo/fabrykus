@@ -42,26 +42,26 @@ auto MergerNode::draw() -> void
 	ImGui::Text("UID: 0x%lX", this->getUID());
 	ImGui::Text("ID: %zd", this->getId());
 	ImGui::PushItemWidth(100.f);
-}
 
-auto MergerNode::update() -> void
-{
-}
 
-auto MergerNode::drawInspector() -> bool
-{
-	if (formatInputIngredients("Inputs:", "in", getInList(), this->getIns(), [this](uintptr_t uid)
-							   { this->dropIN(uid); }, {false, true, true, true, &getOutList(), true, Rational(1,1) }))
-	{
-		return true;
+	inAmount = 0.0;
+    totalIntake = 0.0;
+
+	bool isMerging = (mode == Mode::MERGER && !isReverseFlow) || (mode == Mode::SPLITTER && isReverseFlow);
+	bool isSplitting = !isMerging;
+
+	float currentTotal = 0.0f;
+	for (size_t j = 0; j < getInList().size(); j++) {
+		currentTotal += getInVal<Ingredient>(j).asDouble();
 	}
-	if (formatInputIngredients("Output:", "out", outs, this->getOuts(), [this](uintptr_t uid)
-							   { this->dropOUT(uid); }, {false, false, false, true, &getInList()}))
-	{
-		return true;
+	totalIntake = currentTotal;
+
+	if (isSplitting && !getInList().empty()) {
+		inAmount = getInVal<Ingredient>(0).asDouble();
 	}
 
-	return false;
+
+	update();
 }
 
 const auto MergerNode::getColor() -> std::shared_ptr<ImFlow::NodeStyle>

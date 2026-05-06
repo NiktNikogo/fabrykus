@@ -17,7 +17,6 @@ TerminalNode::TerminalNode(size_t id, double time, std::vector<Ingredient> outs)
 
 auto TerminalNode::draw() -> void
 {
-	return;
 }
 
 auto TerminalNode::syncPins() -> void
@@ -34,13 +33,15 @@ auto TerminalNode::syncPins() -> void
 	inPins.clear();
 	outPins.clear();
 
-	for (size_t i = 0; i < getInList().size(); i++)
+    for (size_t i = 0; i < getInList().size(); i++)
     {
         auto p = addIN_uid<Ingredient>(i, " ", Ingredient{0, ""}, labelMatchFilter)->renderer([this, i](ImFlow::Pin *p)
                                                                                                     {
             if (i < getInList().size()) {
+                auto got = getInVal<Ingredient>(i);
+                getInList()[i].amount = got.amount;
                 ImGui::Text("%s", getInList()[i].name.c_str());
-                ImGui::TextDisabled("I: %.2f units/s ", getInVal<Ingredient>(i).asDouble());
+                ImGui::TextDisabled("I: %.2f units/s ", got.asDouble());
                 ImGui::SameLine();
                 p->drawSocket();
                 p->drawDecoration();
@@ -48,16 +49,30 @@ auto TerminalNode::syncPins() -> void
         inPins.push_back(p);
     }
 
+
+
     for (size_t i = 0; i < getOutList().size(); i++)
     {
         auto p = addOUT_uid<Ingredient>(i, " ")->behaviour([this, i]() {
-            return Ingredient{ getOutList()[i].asDouble() / time, getOutList()[i].name };
+            auto out = getOutList()[i].amount;
+            if(time == 0.0f) {
+                out = Rational(0);
+            } else {
+                out /= Ingredient::makeFromDouble(time);
+            }
+            return Ingredient{ out, getOutList()[i].name };
         });
         
         p->renderer([this, i](ImFlow::Pin *p) {
             if (i < getOutList().size()) {
                 ImGui::Text("%s", getOutList()[i].name.c_str());
-                ImGui::TextDisabled("O: %.2f units/s ", getOutList()[i].asDouble() /time);
+                auto out = getOutList()[i].amount;
+                if(time == 0.0f) {
+                    out = Rational(0);
+                } else {
+                    out /= Ingredient::makeFromDouble(time);
+                }
+                ImGui::TextDisabled("O: %.2f units/s ", boost::rational_cast<double>(out));
                 p->drawSocket();
                 p->drawDecoration();
             } 
