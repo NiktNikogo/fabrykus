@@ -32,6 +32,7 @@ add_library(app_lib STATIC
     src/Ui/nodeInspector.cpp
     src/Ui/menuBuilder.cpp
     src/Ui/graphInspector.cpp
+    src/Ui/edgeInspector.cpp
     src/Nodes/simpleMachineNode.cpp
     src/Nodes/terminalNode.cpp
     src/Nodes/productNode.cpp

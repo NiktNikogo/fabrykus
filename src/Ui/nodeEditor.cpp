@@ -21,12 +21,39 @@ auto NodeEditor::draw() -> void
     if (ImGui::Begin("Node Editor", nullptr, editorFlags))
     {
         grid.update();
-        ImGui::GetWindowDrawList()->AddRect(
+            ImGui::GetWindowDrawList()->AddRect(
             graphBoundingBox.first, graphBoundingBox.second,
             IM_COL32(0, 255, 255, 255),
             10.0f,
             0,
             3.0f);
+    
+        if(bezierCoords.first.x != FLT_MAX) {
+            auto& context = grid.getGrid();
+            float scale = context.scale();
+            ImVec2 origin = context.origin();
+
+            auto transform = [&](ImVec2 p ) {
+                return ImVec2(p.x * scale + origin.x, p.y * scale + origin.y);
+            };
+            auto p2 = bezierCoords.second;
+            auto p1 = bezierCoords.first;
+            float distance = sqrt(pow((p2.x - p1.x), 2.f) + pow((p2.y - p1.y), 2.f));
+            float delta = distance * 0.45f;
+            if (p2.x < p1.x) delta += 0.2f * (p1.x - p2.x);
+            // float vert = (p2.x < p1.x - 20.f) ? 0.062f * distance * (p2.y - p1.y) * 0.005f : 0.f;
+            float vert = 0.f;
+            ImVec2 p22 = p2 - ImVec2(delta, vert);
+            if (p2.x < p1.x - 50.f) delta *= -1.f;
+            ImVec2 p11 = p1 + ImVec2(delta, vert);
+            
+            static const ImU32 color = IM_COL32(255, 0, 0, 255);
+            p1 = transform(p1);
+            p2 = transform(p2);
+            p11 = transform(p11);
+            p22 = transform(p22);
+            ImGui::GetWindowDrawList()->AddBezierCubic(p1, p11, p22, p2, color, 8.0f);
+        }
         if (ImGui::IsKeyPressed(ImGuiKey_2))
         {
             digraph.printTopologicalSort();
@@ -123,7 +150,6 @@ auto NodeEditor::draw() -> void
 
             ImGui::EndPopup();
         }
-
         ImGui::End();
     }
 }
@@ -142,7 +168,7 @@ auto NodeEditor::getSelectedNode() -> std::shared_ptr<SimpleMachineNode>
     return nullptr;
 }
 
-auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox) -> void
+auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox, std::pair<ImVec2, ImVec2> bezierCoords) -> void
 {
     this->setSize(size);
     this->size = size;
@@ -222,6 +248,7 @@ auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox)
             digraph.addEdge(left, right, pinY);
         }
     }
+    this->bezierCoords = bezierCoords;
     this->graphBoundingBox = graphBoundingBox;
 }
 
