@@ -137,8 +137,8 @@ auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid, DiGraph &digraph
 
 const auto GraphInspector::draw(ImFlow::ImNodeFlow &grid, DiGraph &digraph, bool canShow) -> void const
 {
-	if (!canShow)
-		return;
+	// if (!canShow)
+	// 	return;
 	if (isHiddenByKeys)
 		return;
 
@@ -214,7 +214,7 @@ auto GraphInspector::update(DiGraph &graph, ImFlow::ImNodeFlow &grid) -> void
 
 auto GraphInspector::setShow(bool isShowings) -> void
 {
-	this->hasGraphs = hasGraphs;
+	this->hasGraphs = isShowings;
 }
 
 const auto GraphInspector::getShow() -> bool const
