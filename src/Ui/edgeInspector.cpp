@@ -39,6 +39,12 @@ const auto EdgeInspector::draw(ImFlow::ImNodeFlow &grid, bool canShow) -> void c
 				ImGui::Text("From Node ID: %d", leftParent->getUID());
 				ImGui::Text("To Node Id: %d", rightParent->getUID());
 			}
+			if (ImGui::Button("Deselect"))
+			{
+				selectedEdge = nullptr;
+				ImGui::End();
+				return;
+			}
 
 		}
 	}

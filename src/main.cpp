@@ -9,11 +9,13 @@
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
 #endif
 
+#include "Internal/imageManager.hpp"
 #include "Ui/nodeEditor.hpp"
 #include "Ui/nodeInspector.hpp"
 #include "Ui/menuBuilder.hpp"
 #include "Ui/graphInspector.hpp"
 #include "Ui/edgeInspector.hpp"
+#include "Ui/resourceMenu.hpp"
 #include "Nodes/simpleMachineNode.hpp"
 #include "Nodes/ingredientNode.hpp"
 #include "Nodes/productNode.hpp"
@@ -74,6 +76,8 @@ int main(int, char **)
     auto nodeInspector = std::make_unique<NodeInspector>();
     auto graphInspector = std::make_unique<GraphInspector>();
     auto edgeInspector = std::make_unique<EdgeInspector>();
+    auto resourceMenu = std::make_unique<ResourceMenu>(ImageManager::get());
+
 
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr;
@@ -116,17 +120,16 @@ int main(int, char **)
             .endMenu()
             .beginMenu("Windows")
             .addItem("Node Insepctor", "Ctrl+I", [&nodeInspector, &graphInspector, &edgeInspector]() {
-                if(!graphInspector->getShow() && !edgeInspector->getShow()) {
-                    nodeInspector->setHiddenByKeys(false);
-                } })
+                nodeInspector->setHiddenByKeys(false);
+            })
             .addItem("Graph Inspector", "Ctrl+G", [&nodeInspector, &graphInspector, &edgeInspector]() { 
-                if(!nodeInspector->getShow() && !edgeInspector->getShow()) {
-                    graphInspector->setHiddenByKeys(false); 
-                } })
+                graphInspector->setHiddenByKeys(false); 
+            })
             .addItem("Edge Inspector", "Ctrl+T", [&nodeInspector, &graphInspector, &edgeInspector]() {
-                if(!graphInspector->getShow() && !nodeInspector->getShow()) {
-                    edgeInspector->setHiddenByKeys(false);
-                }
+                edgeInspector->setHiddenByKeys(false);
+            })
+            .addItem("Resource Menu", "Ctrl+Y", [&nodeInspector, &graphInspector, &edgeInspector]() {
+                edgeInspector->setHiddenByKeys(false);
             })
             .endMenu()
             .beginMenu("Nodes")
@@ -206,7 +209,9 @@ int main(int, char **)
 
         graphInspector->update(editor->getGraph(), editor->getGrid());
         graphInspector->draw(editor->getGrid(), editor->getGraph(), true);
-
+        
+        resourceMenu->update();
+        resourceMenu->draw();
 
         ImGui::Render();
         

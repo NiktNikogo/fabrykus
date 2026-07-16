@@ -28,11 +28,13 @@ target_compile_definitions(imguifiledialog PRIVATE USE_STD_FILESYSTEM)
 # my staff
 add_library(app_lib STATIC
     src/Internal/nodeEditorIO.cpp
+    src/Internal/imageManager.cpp
     src/Ui/nodeEditor.cpp
     src/Ui/nodeInspector.cpp
     src/Ui/menuBuilder.cpp
     src/Ui/graphInspector.cpp
     src/Ui/edgeInspector.cpp
+    src/Ui/resourceMenu.cpp
     src/Nodes/simpleMachineNode.cpp
     src/Nodes/terminalNode.cpp
     src/Nodes/productNode.cpp
