@@ -32,7 +32,7 @@ auto ImageManager::getTexture(const std::string &productName) -> ImTextureID
 		return tex;
 	}
 
-	return 0;
+	return cache["placeholder"];
 }
 
 auto ImageManager::addAsset(const std::string &productID, const std::string &path) -> void

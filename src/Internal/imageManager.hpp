@@ -11,6 +11,9 @@ class ImageManager {
 public:
 	static ImageManager& get() {
 		static ImageManager instance;
+		instance.registryPath = "./src/res.json";
+		instance.addAsset("placeholder", "./src/placeholder.png");
+		instance.getTexture("placeholder");
 		return instance;
 	}
 	auto loadRegistry(const std::string& path) -> void;

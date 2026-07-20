@@ -1,9 +1,8 @@
 #include "edgeInspector.hpp"
+#include "Internal/imageManager.hpp"
 
 const auto EdgeInspector::draw(ImFlow::ImNodeFlow &grid, bool canShow) -> void const
 {
-	// if (!canShow)
-	// 	return;
 	if (isHiddenByKeys)
 		return;
 
@@ -28,16 +27,19 @@ const auto EdgeInspector::draw(ImFlow::ImNodeFlow &grid, bool canShow) -> void c
 		{
 			auto leftPin = selectedEdge->left();
 			auto rightPin = selectedEdge->right();
-			auto leftParent = leftPin->getParent();
-			auto rightParent = rightPin->getParent();
-
-			ImGui::Text("Selected edge: %p", selectedEdge);
+			auto leftParent = dynamic_cast<SimpleMachineNode*>(leftPin->getParent());
+			auto rightParent = dynamic_cast<SimpleMachineNode*>(rightPin->getParent());
+			
+			auto pinIdx = leftParent->getOutPinIndex(leftPin);
+			const auto ingredientType = leftParent->getOutList()[pinIdx].name;
+			ImGui::Text("Selected edge: %s", ingredientType.c_str());
 			ImGui::Separator();
-
+			auto tex = ImageManager::get().getTexture(ingredientType);
 			if (leftParent && rightParent)
 			{
-				ImGui::Text("From Node ID: %d", leftParent->getUID());
-				ImGui::Text("To Node Id: %d", rightParent->getUID());
+				ImGui::Text("From Node ID: %lu", leftParent->getId());
+				ImGui::Text("To Node Id: %lu", rightParent->getId());
+				ImGui::Image(tex, ImVec2(96, 96));
 			}
 			if (ImGui::Button("Deselect"))
 			{
@@ -91,16 +93,27 @@ const auto EdgeInspector::getHiddenByKeys() -> bool const
 
 const auto EdgeInspector::getBezierCoords(ImFlow::ImNodeFlow& grid) -> std::pair<ImVec2, ImVec2> const
 {
-	if(selectedEdge) {
-		if(selectedEdge->left() && selectedEdge->right()) {
-			auto leftPos = selectedEdge->left()->pinPoint();
-			auto rightPos = selectedEdge->right()->pinPoint();
-			
-			return {leftPos, rightPos};
-		} else {
-			return {{FLT_MAX, FLT_MAX}, {FLT_MAX, FLT_MAX}};
+	if(!selectedEdge)  {
+		return {{FLT_MAX, FLT_MAX}, {FLT_MAX, FLT_MAX}};
+	}
+	auto edgeExists = false;
+	for(const auto& edge : grid.getLinks()) {
+		if(edge.lock().get() == selectedEdge) {
+			edgeExists = true;
+			break;
 		}
+	}
+	if(!edgeExists) {
+		selectedEdge = nullptr;
+		return {{FLT_MAX, FLT_MAX}, {FLT_MAX, FLT_MAX}};
+	}
+	if(selectedEdge->left() && selectedEdge->right()) {
+		auto leftPos = selectedEdge->left()->pinPoint();
+		auto rightPos = selectedEdge->right()->pinPoint();
+		
+		return {leftPos, rightPos};
 	} else {
 		return {{FLT_MAX, FLT_MAX}, {FLT_MAX, FLT_MAX}};
 	}
+	
 }
