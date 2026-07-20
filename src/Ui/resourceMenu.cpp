@@ -14,12 +14,16 @@ const auto ResourceMenu::draw() -> void const
 	ImGui::SetNextWindowPos(ImVec2(screenW - menuWidth, menuHeight));
 	ImGui::SetNextWindowSize(ImVec2(menuWidth, screenH - menuHeight));
 
+	const auto flags = ImGuiWindowFlags_NoMove |
+					   ImGuiWindowFlags_NoResize |
+					   ImGuiWindowFlags_NoCollapse;
+	
 	static std::string updateID = "";
 	static char idBuf[64] = "";
 	static std::string pathBuf = "";
-	if (ImGui::Begin("Resource Manager", nullptr))
+	if (ImGui::Begin("Resource Manager", nullptr, flags))
 	{
-
+		ImGui::SetWindowFontScale(1.5f);
 		if (ImGui::Button("Load registry"))
 		{
 			IGFD::FileDialogConfig config;
@@ -73,7 +77,7 @@ const auto ResourceMenu::draw() -> void const
 			ImGui::TableSetupColumn("Preview", ImGuiTableColumnFlags_WidthFixed, 60.0f);
 			ImGui::TableSetupColumn("ID");
 			ImGui::TableSetupColumn("Path");
-			ImGui::TableSetupColumn("Actions", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+			ImGui::TableSetupColumn("Actions");
 			ImGui::TableHeadersRow();
 
 
@@ -102,7 +106,6 @@ const auto ResourceMenu::draw() -> void const
 					IGFD::FileDialogConfig config;
 					ImGuiFileDialog::Instance()->OpenDialog("UpdateFileKey", "Update Image Path", ".png,.jpg,.jpeg", config);
 				}
-				ImGui::SameLine();
 				if (ImGui::Button("Remove"))
 				{
 					toRemove.push_back(id);
