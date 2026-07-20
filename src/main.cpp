@@ -77,8 +77,7 @@ int main(int, char **)
     auto graphInspector = std::make_unique<GraphInspector>();
     auto edgeInspector = std::make_unique<EdgeInspector>();
     auto resourceMenu = std::make_unique<ResourceMenu>(ImageManager::get());
-
-
+    
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr;
     EMSCRIPTEN_MAINLOOP_BEGIN

@@ -79,7 +79,7 @@ auto ImageManager::getCurrentPath() -> const std::string &
 	return registryPath;
 }
 
-ImTextureID ImageManager::loadTextureFromFile(const std::string &path)
+auto ImageManager::loadTextureFromFile(const std::string &path) -> ImTextureID
 {
 	int width, height, channels;
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
@@ -96,4 +96,52 @@ ImTextureID ImageManager::loadTextureFromFile(const std::string &path)
 
 	stbi_image_free(data);
 	return texId;
+}
+
+auto ImageManager::loadTextureFromMemory(const unsigned char *data, int size) -> ImTextureID
+{
+	int width, height, channels;
+	if(!data || size <= 0) return 0;
+	unsigned char* imgData = stbi_load_from_memory(data, size, &width, &height, &channels, 4);
+	if(!imgData) return 0;
+
+	GLuint texId;
+	glGenTextures(1, &texId);
+	glBindTexture(GL_TEXTURE_2D, texId);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgData);
+
+	stbi_image_free(imgData);
+	return texId;
+}
+
+auto ImageManager::init() -> void
+{
+	registryPath = "./res.json";
+
+	if(std::filesystem::exists(registryPath)) {
+		loadRegistry(registryPath);
+		saveRegistry();
+		return;
+	}
+
+	std::string placeholderPath = "./placeholder.png";
+	registry["placeholder"] = placeholderPath;
+	
+	if(!std::filesystem::exists(placeholderPath)) {
+		std::ofstream outFile(placeholderPath, std::ios::binary);
+		if(outFile.is_open()) {
+			outFile.write(reinterpret_cast<const char*>(placeholderData), placeholderLength);
+			outFile.close();
+		}
+		cache["placeholder"] = ImageManager::loadTextureFromMemory(placeholderData, placeholderLength);
+	} else {
+		cache["placeholder"] = ImageManager::loadTextureFromFile(placeholderPath);
+	}
+	
+	loadRegistry(registryPath);	
+	saveRegistry();
 }

@@ -6,14 +6,12 @@
 #include <nlohmann/json.hpp>
 #include <imgui.h>
 
-class ImageManager {
+#include "placeHolderData.h"
 
+class ImageManager {
 public:
 	static ImageManager& get() {
 		static ImageManager instance;
-		instance.registryPath = "./src/res.json";
-		instance.addAsset("placeholder", "./src/placeholder.png");
-		instance.getTexture("placeholder");
 		return instance;
 	}
 	auto loadRegistry(const std::string& path) -> void;
@@ -26,13 +24,17 @@ public:
 	auto getRegistry() -> const std::unordered_map<std::string, std::string>&;
 	auto getCurrentPath() -> const std::string&; 
 private:
-	ImageManager() = default;
+	ImageManager() {
+		init();
+	}
 
 	std::unordered_map<std::string, ImTextureID> cache;
 	std::unordered_map<std::string, std::string> registry;
 	std::string registryPath;
 
-	ImTextureID loadTextureFromFile(const std::string& path);
+	auto loadTextureFromFile(const std::string& path) -> ImTextureID;
+	static auto loadTextureFromMemory(const unsigned char* data, int size) -> ImTextureID;
+	auto init() -> void;
 };
 
 
