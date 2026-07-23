@@ -12,6 +12,7 @@
       ]
     },
     "nlohmann-json",
-    "boost-rational"
+    "boost-rational",
+    "stb"
   ]
 }

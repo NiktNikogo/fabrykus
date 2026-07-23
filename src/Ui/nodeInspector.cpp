@@ -14,12 +14,12 @@ auto NodeInspector::setNode(std::shared_ptr<SimpleMachineNode> node) -> void
 
 const auto NodeInspector::draw(ImFlow::ImNodeFlow &grid, bool canDraw) -> void const
 {
-    if(!canDraw)
-        return;
+    // if(!canDraw)
+    //     return;
     if (isHiddenByKeys)
         return;
-    if (!isShowing)
-        return;
+    // if (!isShowing)
+    //     return;
 
     float screenW = ImGui::GetIO().DisplaySize.x;
     float screenH = ImGui::GetIO().DisplaySize.y;
@@ -31,7 +31,7 @@ const auto NodeInspector::draw(ImFlow::ImNodeFlow &grid, bool canDraw) -> void c
                        ImGuiWindowFlags_NoResize |
                        ImGuiWindowFlags_NoCollapse;
 
-    if (ImGui::Begin("Node Inspector", &isShowing, flags))
+    if (ImGui::Begin("Node Inspector", nullptr, flags))
     {
         if (auto node = selectedNode.lock())
         {
@@ -59,6 +59,9 @@ const auto NodeInspector::draw(ImFlow::ImNodeFlow &grid, bool canDraw) -> void c
         {
             isShowing = false;
             isHiddenByKeys = false;
+            ImGui::SetWindowFontScale(1.5f);
+            ImGui::Text("No node found");
+            
         }
     }
     ImGui::End();

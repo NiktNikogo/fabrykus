@@ -9,10 +9,13 @@
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
 #endif
 
+#include "Internal/imageManager.hpp"
 #include "Ui/nodeEditor.hpp"
 #include "Ui/nodeInspector.hpp"
 #include "Ui/menuBuilder.hpp"
 #include "Ui/graphInspector.hpp"
+#include "Ui/edgeInspector.hpp"
+#include "Ui/resourceMenu.hpp"
 #include "Nodes/simpleMachineNode.hpp"
 #include "Nodes/ingredientNode.hpp"
 #include "Nodes/productNode.hpp"
@@ -72,7 +75,9 @@ int main(int, char **)
     auto editor = std::make_unique<NodeEditor>(size);
     auto nodeInspector = std::make_unique<NodeInspector>();
     auto graphInspector = std::make_unique<GraphInspector>();
-
+    auto edgeInspector = std::make_unique<EdgeInspector>();
+    auto resourceMenu = std::make_unique<ResourceMenu>(ImageManager::get());
+    
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr;
     EMSCRIPTEN_MAINLOOP_BEGIN
@@ -113,14 +118,18 @@ int main(int, char **)
             .addItem("Exit", "", {})
             .endMenu()
             .beginMenu("Windows")
-            .addItem("Node Insepctor", "Ctrl+I", [&nodeInspector, &graphInspector]() {
-                if(!graphInspector->getShow()) {
-                    nodeInspector->setHiddenByKeys(!nodeInspector->getHiddenByKeys());
-                } })
-            .addItem("Graph Inspector", "Ctrl+G", [&nodeInspector, &graphInspector]() { 
-                if(!nodeInspector->getShow()) {
-                    graphInspector->setHiddenByKeys(!graphInspector->getHiddenByKeys()); 
-                } })
+            .addItem("Node Insepctor", "Ctrl+I", [&nodeInspector, &graphInspector, &edgeInspector]() {
+                nodeInspector->setHiddenByKeys(false);
+            })
+            .addItem("Graph Inspector", "Ctrl+G", [&nodeInspector, &graphInspector, &edgeInspector]() { 
+                graphInspector->setHiddenByKeys(false); 
+            })
+            .addItem("Edge Inspector", "Ctrl+T", [&nodeInspector, &graphInspector, &edgeInspector]() {
+                edgeInspector->setHiddenByKeys(false);
+            })
+            .addItem("Resource Menu", "Ctrl+Y", [&nodeInspector, &graphInspector, &edgeInspector]() {
+                edgeInspector->setHiddenByKeys(false);
+            })
             .endMenu()
             .beginMenu("Nodes")
             .addItem("Sort nodes", "Ctrl+D", [&editor]() {
@@ -140,6 +149,7 @@ int main(int, char **)
         bool mouseOverInspector = (mousePos.x >= screenW - inspectorWidth && mousePos.y >= menuHeight);
         bool nodeActive = nodeInspector->getShow() && !nodeInspector->getHiddenByKeys();
         bool graphActive = graphInspector->getShow() && !graphInspector->getHiddenByKeys();
+        bool edgeActive = edgeInspector->getShow() && !edgeInspector->getHiddenByKeys();
         bool inspectorActive = nodeActive || graphActive;
         bool isFileDialogActive = ImGuiFileDialog::Instance()->IsOpened();
 
@@ -163,7 +173,9 @@ int main(int, char **)
             }
         }
 
-        editor->update(ImGui::GetIO().DisplaySize, graphInspector->getCurrentBoundingBox(editor->getGrid()));
+        editor->update(ImGui::GetIO().DisplaySize, 
+                        graphInspector->getCurrentBoundingBox(editor->getGrid()),
+                        edgeInspector->getBezierCoords(editor->getGrid()));
         editor->draw();
 
         if (inspectorActive && mouseOverInspector)
@@ -181,6 +193,10 @@ int main(int, char **)
             }
         }
 
+        
+        edgeInspector->update(editor->getGraph(), editor->getGrid());
+        edgeInspector->draw(editor->getGrid(), nodeInspector->getHiddenByKeys() && graphInspector->getHiddenByKeys());
+
         nodeInspector->update();
         nodeInspector->draw(editor->getGrid(), graphInspector->getHiddenByKeys());
         
@@ -192,7 +208,9 @@ int main(int, char **)
 
         graphInspector->update(editor->getGraph(), editor->getGrid());
         graphInspector->draw(editor->getGrid(), editor->getGraph(), true);
-
+        
+        resourceMenu->update();
+        resourceMenu->draw();
 
         ImGui::Render();
         

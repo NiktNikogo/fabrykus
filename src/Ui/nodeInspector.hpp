@@ -19,7 +19,7 @@ public:
     NodeInspector() : 
         isShowing(false),
         selectedNode(),
-        isHiddenByKeys(false)
+        isHiddenByKeys(true)
     {}
     
     auto setNode(std::shared_ptr<SimpleMachineNode> node) -> void;

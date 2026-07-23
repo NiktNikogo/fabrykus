@@ -28,6 +28,7 @@ private:
                              ImGuiWindowFlags_NoScrollbar |
                              ImGuiWindowFlags_NoCollapse |
                              ImGuiWindowFlags_NoBringToFrontOnFocus;
+    std::pair<ImVec2, ImVec2> bezierCoords;
 public:
     NodeEditor(size_t gridSize);
 
@@ -45,7 +46,7 @@ public:
     inline auto getGrid() -> ImFlow::ImNodeFlow& {return grid;};
     inline auto getGraph() -> DiGraph& {return digraph;};
     auto getSelectedNode() -> std::shared_ptr<SimpleMachineNode>;
-    auto update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox ) -> void;
+    auto update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox, std::pair<ImVec2, ImVec2> bezierCoords) -> void;
     auto saveToFile(const std::string& path) -> void;
     auto loadFromAFile(const std::string& path) -> void;
     auto setNewId(size_t id) -> void {idCounter = id;};
