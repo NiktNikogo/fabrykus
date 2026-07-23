@@ -20,7 +20,7 @@ auto ImageManager::loadRegistry(const std::string &path) -> void
 
 }
 
-auto ImageManager::getTexture(const std::string &productName) -> ImTextureID
+auto ImageManager::getTexture(const std::string &productName) -> Texture
 {
 	if(cache.count(productName)) {
 		return cache[productName];
@@ -79,11 +79,16 @@ auto ImageManager::getCurrentPath() -> const std::string &
 	return registryPath;
 }
 
-auto ImageManager::loadTextureFromFile(const std::string &path) -> ImTextureID
+auto ImageManager::isInRegistry(const std::string& key) -> bool
+{
+	return registry.find(key) != registry.end();
+}
+
+auto ImageManager::loadTextureFromFile(const std::string &path) -> Texture
 {
 	int width, height, channels;
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
-	if(!data) return 0;
+	if(!data) return {0, 0, 0};
 
 	GLuint texId;
 	glGenTextures(1, &texId);
@@ -95,15 +100,15 @@ auto ImageManager::loadTextureFromFile(const std::string &path) -> ImTextureID
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	stbi_image_free(data);
-	return texId;
+	return {width, height, texId};
 }
 
-auto ImageManager::loadTextureFromMemory(const unsigned char *data, int size) -> ImTextureID
+auto ImageManager::loadTextureFromMemory(const unsigned char *data, int size) -> Texture
 {
 	int width, height, channels;
-	if(!data || size <= 0) return 0;
+	if(!data || size <= 0) return {0, 0, 0};
 	unsigned char* imgData = stbi_load_from_memory(data, size, &width, &height, &channels, 4);
-	if(!imgData) return 0;
+	if(!imgData) return {0, 0, 0};
 
 	GLuint texId;
 	glGenTextures(1, &texId);
@@ -115,7 +120,7 @@ auto ImageManager::loadTextureFromMemory(const unsigned char *data, int size) ->
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgData);
 
 	stbi_image_free(imgData);
-	return texId;
+	return {width, height, texId};
 }
 
 auto ImageManager::init() -> void

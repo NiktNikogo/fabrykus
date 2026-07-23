@@ -47,6 +47,7 @@ add_library(app_lib STATIC
     src/Util/inspectorConfig.hpp
     src/Util/isolatedGraph.cpp
     src/Util/savedLink.hpp
+    src/Util/texture.hpp
 ) 
 
 target_include_directories(app_lib PUBLIC src) 

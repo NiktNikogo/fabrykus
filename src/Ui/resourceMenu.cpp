@@ -36,15 +36,6 @@ const auto ResourceMenu::draw() -> void const
 			manager.saveRegistry();
 		}
 
-		if (ImGuiFileDialog::Instance()->Display("LoadRegistryKey"))
-		{
-			if (ImGuiFileDialog::Instance()->IsOk())
-			{
-				manager.loadRegistry(ImGuiFileDialog::Instance()->GetFilePathName());
-			}
-			ImGuiFileDialog::Instance()->Close();
-		}
-
 		ImGui::Separator();
 
 		ImGui::Text("Add new asset:");
@@ -72,12 +63,15 @@ const auto ResourceMenu::draw() -> void const
 		ImGui::Text("Assets:");
 		std::vector<std::string> toRemove;
 
-		if (ImGui::BeginTable("AssetTable", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+		if (ImGui::BeginTable("AssetTable", 4, ImGuiTableFlags_Borders 
+												| ImGuiTableFlags_RowBg 
+												| ImGuiTableFlags_Resizable
+												| ImGuiTableFlags_ScrollY))
 		{
-			ImGui::TableSetupColumn("Preview", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+			ImGui::TableSetupColumn("Preview");
 			ImGui::TableSetupColumn("ID");
 			ImGui::TableSetupColumn("Path");
-			ImGui::TableSetupColumn("Actions");
+			ImGui::TableSetupColumn("Actions", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f);
 			ImGui::TableHeadersRow();
 
 
@@ -86,10 +80,15 @@ const auto ResourceMenu::draw() -> void const
 				ImGui::PushID(id.c_str());
 				ImGui::TableNextRow();
 				ImGui::TableSetColumnIndex(0);
-				auto tex = manager.getTexture(id);
+				ImGui::AlignTextToFramePadding();
+				auto texture = manager.getTexture(id);
+				auto tex = texture.texID;
 				if (tex)
 				{
-					ImGui::Image(tex, ImVec2(48, 48));
+					auto avail = ImGui::GetContentRegionAvail().x;
+					auto size = std::clamp(avail - 4.0f, 16.0f, 256.0f);
+					auto aspect = texture.h / texture.w;
+					ImGui::Image(tex, ImVec2(size, size * aspect));
 					ImGui::SameLine();
 				}
 				ImGui::TableSetColumnIndex(1);
@@ -121,6 +120,21 @@ const auto ResourceMenu::draw() -> void const
 	}
 
 	ImGui::End();
+
+	if (ImGuiFileDialog::Instance()->IsOpened())
+	{
+		ImVec2 screenSize = ImGui::GetIO().DisplaySize;
+		ImGui::SetNextWindowSize(ImVec2(screenSize.x * 0.8f, screenSize.y * 0.8f), ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(ImVec2(screenSize.x * 0.5f, screenSize.y * 0.5f), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	}
+	if (ImGuiFileDialog::Instance()->Display("LoadRegistryKey"))
+	{
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			manager.loadRegistry(ImGuiFileDialog::Instance()->GetFilePathName());
+		}
+		ImGuiFileDialog::Instance()->Close();
+	}
 
 	if (ImGuiFileDialog::Instance()->Display("AddFileKey"))
 	{

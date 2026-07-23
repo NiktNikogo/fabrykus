@@ -34,12 +34,16 @@ const auto EdgeInspector::draw(ImFlow::ImNodeFlow &grid, bool canShow) -> void c
 			const auto ingredientType = leftParent->getOutList()[pinIdx].name;
 			ImGui::Text("Selected edge: %s", ingredientType.c_str());
 			ImGui::Separator();
-			auto tex = ImageManager::get().getTexture(ingredientType);
+			auto texture = ImageManager::get().getTexture(ingredientType);
+			auto tex = texture.texID;
+			auto aspect = texture.h / texture.w;
+			static const auto imageSize = 96;
 			if (leftParent && rightParent)
 			{
 				ImGui::Text("From Node ID: %lu", leftParent->getId());
 				ImGui::Text("To Node Id: %lu", rightParent->getId());
-				ImGui::Image(tex, ImVec2(96, 96));
+				ImGui::Text("Item %s in the registry", ImageManager::get().isInRegistry(ingredientType) ? "found" : "not found");
+				ImGui::Image(tex, ImVec2(imageSize, imageSize * aspect));
 			}
 			if (ImGui::Button("Deselect"))
 			{
