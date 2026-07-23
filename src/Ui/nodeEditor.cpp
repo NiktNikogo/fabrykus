@@ -283,7 +283,7 @@ auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox,
                 grid.getNodes().at(id)->destroy();
             }
             std::string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
-            loadFromAFile(filePath);
+            loadFromAFile(filePath, false);
         }
         ImGuiFileDialog::Instance()->Close();
     }
@@ -292,7 +292,7 @@ auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox,
         if (ImGuiFileDialog::Instance()->IsOk())
         {
             std::string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
-            loadFromAFile(filePath);
+            loadFromAFile(filePath, true);
         }
         ImGuiFileDialog::Instance()->Close();
     }
@@ -340,9 +340,9 @@ auto NodeEditor::saveToFile(const std::string &path) -> void
     NodeEditorIO::save(path, grid);
 }
 
-auto NodeEditor::loadFromAFile(const std::string &path) -> void
+auto NodeEditor::loadFromAFile(const std::string &path, bool addFile) -> void
 {
-    idCounter = NodeEditorIO::load(path, grid, digraph, idCounter);
+    idCounter = NodeEditorIO::load(path, grid, digraph, addFile ? idCounter : 0);
 }
 
 auto NodeEditor::arrangeNodes(LayoutStyle style) -> void

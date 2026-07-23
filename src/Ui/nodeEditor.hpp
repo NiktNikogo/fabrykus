@@ -48,7 +48,7 @@ public:
     auto getSelectedNode() -> std::shared_ptr<SimpleMachineNode>;
     auto update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox, std::pair<ImVec2, ImVec2> bezierCoords) -> void;
     auto saveToFile(const std::string& path) -> void;
-    auto loadFromAFile(const std::string& path) -> void;
+    auto loadFromAFile(const std::string& path, bool addFile) -> void;
     auto setNewId(size_t id) -> void {idCounter = id;};
     auto arrangeNodes(LayoutStyle style) -> void;
 };
