@@ -130,7 +130,8 @@ auto SimpleMachineNode::syncPins() -> void
             if (i < getInList().size()) {
                 Ingredient recived = getInVal<Ingredient>(i);
                 auto count = calcOptimalCount();
-                auto demand = getInList()[i].amount * count / Ingredient::makeFromDouble(time);
+                auto demand = Rational(0);
+                if (time > 0) demand = getInList()[i].amount * count / Ingredient::makeFromDouble(time);;
                 ImGui::Text("%s", getInList()[i].name.c_str());
                 ImGui::TextDisabled("R: %.2f units/s ", getInList()[i].asDouble());
                 ImGui::TextDisabled("I: %.2f units/s ", recived.asDouble());
@@ -151,13 +152,8 @@ auto SimpleMachineNode::syncPins() -> void
                 auto count = calcOptimalCount();
                 auto througtput = ratio > count ? count : ratio;
                 Ingredient result = getOutList()[i];
-                auto output = result.amount / Ingredient::makeFromDouble(time) * througtput;
-                if(time > 0) {
-                    result.amount = output;
-                } else {
-                    result.amount = 0;
-                }
-            
+                auto output = Rational(0);
+                if (time > 0) output = result.amount / Ingredient::makeFromDouble(time) * througtput;
                 return result; });
         p->renderer([this, i](ImFlow::Pin *p)
                     {
@@ -166,7 +162,8 @@ auto SimpleMachineNode::syncPins() -> void
                 auto count = calcOptimalCount();
                 auto througtput = ratio > count ? count : ratio;
                 Ingredient result = getOutList()[i];
-                auto output = result.amount / Ingredient::makeFromDouble(time) * througtput;
+                auto output = Rational(0);
+                if (time > 0) output = result.amount / Ingredient::makeFromDouble(time) * througtput;
                 ImGui::Text("%s", getOutList()[i].name.c_str());
                 ImGui::TextDisabled("R: %.2f units/s ", result.asDouble()/time);
                 ImGui::TextDisabled("O: %.2f units/s ", boost::rational_cast<double>(output));
