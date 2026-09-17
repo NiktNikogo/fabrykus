@@ -30,72 +30,96 @@ auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid, DiGraph &digraph
 	if (ImGui::CollapsingHeader("Input summary", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		auto sources = currGraph.getSources();
-		for (auto &source : sources)
+
+		if (ImGui::BeginTable("##inputSummaryTable", 3, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_RowBg))
 		{
-			ImGui::PushID(source->getId());
-			size_t i = 0;
-			for (auto &ing : source->getOutList())
+			ImGui::TableSetupColumn("Id");
+			ImGui::TableSetupColumn("Amount");
+			ImGui::TableSetupColumn("Name");
+			ImGui::TableHeadersRow();
+
+			for (auto &source : sources)
 			{
-				inputMap[ing.name] += ing.amount;
-
-				ImGui::PushID(i++);
-
-				const float amountWidth = 80.0f;
-				ImGui::Text("Id: %zu", source->getId());
-				ImGui::PushItemWidth(amountWidth);
-
-				double tempVal = ing.asDouble();
-				if (ImGui::InputDouble(std::format("##Amt").c_str(), &tempVal))
+				ImGui::PushID(source->getId());
+				size_t i = 0;
+				for (auto &ing : source->getOutList())
 				{
-					ing.fromDouble(tempVal);
+					inputMap[ing.name] += ing.amount;
+
+					ImGui::PushID(i++);
+					ImGui::TableNextRow();
+
+					ImGui::TableNextColumn();
+					ImGui::Text("%zu", source->getId());
+
+					ImGui::TableNextColumn();
+					ImGui::SetNextItemWidth(-FLT_MIN);
+					double tempVal = ing.asDouble();
+					if (ImGui::InputDouble("##Amt", &tempVal))
+					{
+						ing.fromDouble(tempVal);
+					}
+
+					ImGui::TableNextColumn();
+					ImGui::SetNextItemWidth(-FLT_MIN);
+					char buffer[SimpleMachineNode::TEXT_INPUT_MAX_LENGTH]{};
+					snprintf(buffer, sizeof(buffer), "%s", ing.name.c_str());
+					if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
+					{
+						ing.name = buffer;
+					}
+
+					ImGui::PopID();
 				}
-				ImGui::PopItemWidth();
-				ImGui::SameLine();
-
-				const float nameWidth = 150.0f;
-				ImGui::PushItemWidth(nameWidth);
-				char buffer[SimpleMachineNode::TEXT_INPUT_MAX_LENGTH]{};
-				snprintf(buffer, sizeof(buffer), "%s", ing.name.c_str());
-				if (ImGui::InputText(std::format("##Name").c_str(), buffer, sizeof(buffer)))
-				{
-					ing.name = buffer;
-				}
-
-				ImGui::PopItemWidth();
-
 				ImGui::PopID();
 			}
-			ImGui::PopID();
+
+			ImGui::EndTable();
 		}
 	}
 	if (ImGui::CollapsingHeader("Machines", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		auto machines = currGraph.getMachines();
-		size_t i = 0;
-		for (const auto &machine : machines)
-		{
-			auto count = boost::rational_cast<size_t>(machine->calcOptimalCount());
-			auto bottleneck = boost::rational_cast<double>(machine->calcBottleneck());
-			ImGui::PushID(i++);
-			ImGui::Text("Machine %zu: used: %zu |", machine->getId(), count);
-			ImGui::SameLine();
 
-			ImVec4 color;
-			if (bottleneck > 0.75f)
+		if (ImGui::BeginTable("##machinesTable", 3, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_RowBg))
+		{
+			ImGui::TableSetupColumn("Machine");
+			ImGui::TableSetupColumn("Used");
+			ImGui::TableSetupColumn("Bottleneck");
+			ImGui::TableHeadersRow();
+
+			size_t i = 0;
+			for (const auto &machine : machines)
 			{
-				color = {0.0f, 1.0f, 0.0f, 1.0f};
+				auto count = boost::rational_cast<size_t>(machine->calcOptimalCount());
+				auto bottleneck = boost::rational_cast<double>(machine->calcBottleneck());
+
+				ImGui::PushID(i++);
+				ImGui::TableNextRow();
+
+				ImGui::TableNextColumn();
+				ImGui::Text("Machine %zu", machine->getId());
+
+				ImGui::TableNextColumn();
+				ImGui::Text("%zu", count);
+
+				ImGui::TableNextColumn();
+				ImVec4 color;
+				if (bottleneck > 0.75f)
+					color = { 0.0f, 1.0f, 0.0f, 1.0f };
+				else if (bottleneck > 0.5f)
+					color = { 1.0f, 0.3f, 0.3f, 1.0f };
+				else
+					color = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+				ImGui::TextColored(color, "%.2f%%", bottleneck * 100);
+
+				ImGui::PopID();
 			}
-			else if (bottleneck < 0.75f && bottleneck > 0.5f)
-			{
-				color = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
-			}
-			else
-			{
-				color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-			}
-			ImGui::TextColored(color, "bottleneck: %.2f", bottleneck * 100);
-			ImGui::PopID();
+
+			ImGui::EndTable();
 		}
+
 	}
 	if (ImGui::CollapsingHeader("Output summary", ImGuiTreeNodeFlags_DefaultOpen))
 	{
@@ -108,28 +132,62 @@ auto GraphInspector::showCurrentGraph(ImFlow::ImNodeFlow &grid, DiGraph &digraph
 			}
 		}
 		ImGui::Text("Producing: ");
-		for (const auto &[name, amount] : outputMap)
+		if (ImGui::BeginTable("##producingTable", 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_RowBg))
 		{
-			ImGui::Text("%s: %.2f u/s", name.c_str(), boost::rational_cast<double>(amount));
+			ImGui::TableSetupColumn("Ingredient");
+			ImGui::TableSetupColumn("Rate");
+			ImGui::TableHeadersRow();
+
+			for (const auto &[name, amount] : outputMap)
+			{
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(name.c_str());
+				ImGui::TableNextColumn();
+				ImGui::Text("%.2f u/s", boost::rational_cast<double>(amount));
+			}
+
+			ImGui::EndTable();
 		}
+
 		ImGui::Text("Relationships: ");
+		auto ratios = currGraph.getOutputRatios(grid, digraph);
 		for (const auto &[outName, outAmount] : outputMap)
 		{
-			for (const auto &[inName, inAmount] : inputMap)
+			if (ImGui::TreeNode(outName.c_str()))
 			{
-				if (ImGui::TreeNode(outName.c_str()))
+				auto it = std::find_if(ratios.begin(), ratios.end(), [&](const auto &pair) {
+					return pair.first.name == outName;
+				});
+
+				if (it == ratios.end() || it->second.empty())
 				{
-					for (const auto &[inName, inAmount] : inputMap)
-					{
-						auto ratio = Rational(0);
-						if (inAmount != Rational(0))
-						{
-							ratio = outAmount / inAmount;
-						}
-						ImGui::Text("Ratio %lld : %lld | %s:%s", ratio.numerator(), ratio.denominator(), outName.c_str(), inName.c_str());
-					}
-					ImGui::TreePop();
+					ImGui::TextDisabled("Nothing contributes");
 				}
+				else
+				{
+					double out = boost::rational_cast<double>(outAmount);
+
+					if (ImGui::BeginTable("##ratioTable", 2, ImGuiTableFlags_SizingStretchProp))
+					{
+						ImGui::TableSetupColumn("Ingredient");
+						ImGui::TableSetupColumn("Amount");
+						ImGui::TableHeadersRow();
+
+						for (const auto &ing : it->second)
+						{
+							ImGui::TableNextRow();
+							ImGui::TableNextColumn();
+							ImGui::Text("%s : %s", outName.c_str(), ing.name.c_str());
+							ImGui::TableNextColumn();
+							ImGui::Text("%.2f : %.2f", out, ing.asFloat());
+						}
+
+						ImGui::EndTable();
+					}
+				}
+
+				ImGui::TreePop();
 			}
 		}
 	}

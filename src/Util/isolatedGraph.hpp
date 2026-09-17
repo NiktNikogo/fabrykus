@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include "ImNodeFlow.h"
 #include "Nodes/simpleMachineNode.hpp"
+#include "Util/ingredient.hpp"
 
 class DiGraph;
 
@@ -13,6 +14,7 @@ private:
 	
 	using Id = ImFlow::NodeUID;
 	using NodesCollection = std::vector<std::shared_ptr<SimpleMachineNode>>;
+
 	std::vector<Id> ids;
 	NodesCollection sources;
 	NodesCollection nodes;
@@ -39,9 +41,10 @@ public:
 	inline const auto getMachines() -> NodesCollection {
 		return machines;
 	}
-	auto getBoundingBox(ImFlow::ImNodeFlow &grid) -> std::pair<ImVec2, ImVec2>;
-	auto reverseFlow(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void;
 	inline void setIsReversed(bool isReversed) {
 		this->isReversed = isReversed;
 	}
+	auto getBoundingBox(ImFlow::ImNodeFlow &grid) -> std::pair<ImVec2, ImVec2>;
+	auto reverseFlow(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> void;
+	auto getOutputRatios(ImFlow::ImNodeFlow &grid, DiGraph &digraph) -> std::map<Ingredient, std::vector<Ingredient>>;
 };

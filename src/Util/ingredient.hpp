@@ -46,6 +46,11 @@ struct Ingredient
     {
         this->amount = makeFromDouble(amount);
     }
+
+    auto operator<=>(const Ingredient& rhs) const {
+        return this->name <=> rhs.name;
+    }
+
 };
 
 inline void from_json(const nlohmann::json &json, Ingredient &ing)

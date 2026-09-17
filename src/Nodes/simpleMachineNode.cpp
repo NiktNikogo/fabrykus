@@ -154,7 +154,7 @@ auto SimpleMachineNode::syncPins() -> void
                 Ingredient result = getOutList()[i];
                 auto output = Rational(0);
                 if (time > 0) output = result.amount / Ingredient::makeFromDouble(time) * througtput;
-                return result; });
+                return Ingredient{output, result.name}; });
         p->renderer([this, i](ImFlow::Pin *p)
                     {
             if (i < getOutList().size()) {
@@ -162,7 +162,7 @@ auto SimpleMachineNode::syncPins() -> void
                 auto count = calcOptimalCount();
                 auto througtput = ratio > count ? count : ratio;
                 Ingredient result = getOutList()[i];
-                auto output = Rational(0);
+                auto output = result.amount / Ingredient::makeFromDouble(time) * througtput;
                 if (time > 0) output = result.amount / Ingredient::makeFromDouble(time) * througtput;
                 ImGui::Text("%s", getOutList()[i].name.c_str());
                 ImGui::TextDisabled("R: %.2f units/s ", result.asDouble()/time);
