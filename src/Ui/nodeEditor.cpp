@@ -278,10 +278,7 @@ auto NodeEditor::update(ImVec2 size, std::pair<ImVec2, ImVec2> graphBoundingBox,
             {
                 ids.push_back(node.second->getUID());
             }
-            for (auto id : ids)
-            {
-                grid.getNodes().at(id)->destroy();
-            }
+            grid.getNodes().clear();
             std::string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
             loadFromAFile(filePath, false);
         }
