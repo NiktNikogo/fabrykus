@@ -118,17 +118,17 @@ int main(int, char **)
             .addItem("Exit", "", {})
             .endMenu()
             .beginMenu("Windows")
-            .addItem("Node Insepctor", "Ctrl+I", [&nodeInspector, &graphInspector, &edgeInspector]() {
+            .addItem("Node Insepctor", "Ctrl+I", [&nodeInspector, &graphInspector, &edgeInspector, &resourceMenu]() {
                 nodeInspector->setHiddenByKeys(false);
             })
-            .addItem("Graph Inspector", "Ctrl+G", [&nodeInspector, &graphInspector, &edgeInspector]() { 
+            .addItem("Graph Inspector", "Ctrl+G", [&nodeInspector, &graphInspector, &edgeInspector, &resourceMenu]() { 
                 graphInspector->setHiddenByKeys(false); 
             })
-            .addItem("Edge Inspector", "Ctrl+T", [&nodeInspector, &graphInspector, &edgeInspector]() {
+            .addItem("Edge Inspector", "Ctrl+T", [&nodeInspector, &graphInspector, &edgeInspector, &resourceMenu]() {
                 edgeInspector->setHiddenByKeys(false);
             })
-            .addItem("Resource Menu", "Ctrl+Y", [&nodeInspector, &graphInspector, &edgeInspector]() {
-                edgeInspector->setHiddenByKeys(false);
+            .addItem("Resource Menu", "Ctrl+Y", [&nodeInspector, &graphInspector, &edgeInspector, &resourceMenu]() {
+                resourceMenu->setHiddenByKeys(false);
             })
             .endMenu()
             .beginMenu("Nodes")
