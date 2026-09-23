@@ -130,7 +130,6 @@ auto ImageManager::init() -> void
 	if(std::filesystem::exists(registryPath)) {
 		loadRegistry(registryPath);
 		saveRegistry();
-		return;
 	}
 
 	std::string placeholderPath = "./placeholder.png";
